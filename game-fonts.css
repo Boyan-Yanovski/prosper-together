@@ -1,0 +1,81 @@
+/* Prosper Together fonts.
+
+   The game's reference look is the one its author's Linux machine draws:
+   Liberation Serif for headings, Noto Sans for text and DejaVu Sans Mono for
+   figures. These font files travel with the game (assets/fonts, with their
+   licences), so every computer draws the same letters and breaks every line
+   in the same place, whatever fonts it has installed.
+
+   The names the stylesheets and the UI editor ask for are redefined here on
+   purpose, each to the font the reference machine draws in its place:
+   Georgia is Liberation Serif, and Trebuchet MS and Inter are Noto Sans.
+   Without this, a Windows machine uses its own Georgia and Trebuchet MS,
+   which are wider, so titles wrap and paragraphs break differently, and
+   Georgia's old-style numerals sit low in the level circles. The fonts'
+   real names are defined as well, for anything written from now on.
+
+   Each style has its own file, as on the reference machine: a request for
+   600 or bolder gets the bold file, anything lighter the regular one.
+
+   Characters a text font lacks are borrowed as the reference machine
+   borrows them: arrows, the minus sign and ∞ in Noto Sans text from
+   Liberation Sans, and other symbols (▶, ⌀, the victory seal's ✦) from
+   DejaVu Sans. Faces that share a name are searched last defined first, so
+   each family lists its borrowed faces before its own; and each borrowed
+   face carries exactly the weight and style of the text face after it, so
+   they are matched together. */
+
+@font-face { font-family: "Liberation Serif"; src: url("assets/fonts/DejaVuSans.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Liberation Serif"; src: url("assets/fonts/LiberationSerif-Regular.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: block; }
+@font-face { font-family: "Liberation Serif"; src: url("assets/fonts/DejaVuSans-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Liberation Serif"; src: url("assets/fonts/LiberationSerif-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: block; }
+@font-face { font-family: "Liberation Serif"; src: url("assets/fonts/DejaVuSans.woff2") format("woff2"); font-style: italic; font-weight: 400; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Liberation Serif"; src: url("assets/fonts/LiberationSerif-Italic.woff2") format("woff2"); font-style: italic; font-weight: 400; font-display: block; }
+@font-face { font-family: "Liberation Serif"; src: url("assets/fonts/DejaVuSans-Bold.woff2") format("woff2"); font-style: italic; font-weight: 700; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Liberation Serif"; src: url("assets/fonts/LiberationSerif-BoldItalic.woff2") format("woff2"); font-style: italic; font-weight: 700; font-display: block; }
+@font-face { font-family: "Georgia"; src: url("assets/fonts/DejaVuSans.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Georgia"; src: url("assets/fonts/LiberationSerif-Regular.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: block; }
+@font-face { font-family: "Georgia"; src: url("assets/fonts/DejaVuSans-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Georgia"; src: url("assets/fonts/LiberationSerif-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: block; }
+@font-face { font-family: "Georgia"; src: url("assets/fonts/DejaVuSans.woff2") format("woff2"); font-style: italic; font-weight: 400; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Georgia"; src: url("assets/fonts/LiberationSerif-Italic.woff2") format("woff2"); font-style: italic; font-weight: 400; font-display: block; }
+@font-face { font-family: "Georgia"; src: url("assets/fonts/DejaVuSans-Bold.woff2") format("woff2"); font-style: italic; font-weight: 700; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Georgia"; src: url("assets/fonts/LiberationSerif-BoldItalic.woff2") format("woff2"); font-style: italic; font-weight: 700; font-display: block; }
+@font-face { font-family: "Noto Sans"; src: url("assets/fonts/DejaVuSans.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Noto Sans"; src: url("assets/fonts/LiberationSans-Regular.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: block; unicode-range: U+2190-22FF; }
+@font-face { font-family: "Noto Sans"; src: url("assets/fonts/NotoSans-Regular.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: block; }
+@font-face { font-family: "Noto Sans"; src: url("assets/fonts/DejaVuSans-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Noto Sans"; src: url("assets/fonts/LiberationSans-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: block; unicode-range: U+2190-22FF; }
+@font-face { font-family: "Noto Sans"; src: url("assets/fonts/NotoSans-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: block; }
+@font-face { font-family: "Noto Sans"; src: url("assets/fonts/DejaVuSans.woff2") format("woff2"); font-style: italic; font-weight: 400; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Noto Sans"; src: url("assets/fonts/LiberationSans-Regular.woff2") format("woff2"); font-style: italic; font-weight: 400; font-display: block; unicode-range: U+2190-22FF; }
+@font-face { font-family: "Noto Sans"; src: url("assets/fonts/NotoSans-Italic.woff2") format("woff2"); font-style: italic; font-weight: 400; font-display: block; }
+@font-face { font-family: "Noto Sans"; src: url("assets/fonts/DejaVuSans-Bold.woff2") format("woff2"); font-style: italic; font-weight: 700; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Noto Sans"; src: url("assets/fonts/LiberationSans-Bold.woff2") format("woff2"); font-style: italic; font-weight: 700; font-display: block; unicode-range: U+2190-22FF; }
+@font-face { font-family: "Noto Sans"; src: url("assets/fonts/NotoSans-BoldItalic.woff2") format("woff2"); font-style: italic; font-weight: 700; font-display: block; }
+@font-face { font-family: "Trebuchet MS"; src: url("assets/fonts/DejaVuSans.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Trebuchet MS"; src: url("assets/fonts/LiberationSans-Regular.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: block; unicode-range: U+2190-22FF; }
+@font-face { font-family: "Trebuchet MS"; src: url("assets/fonts/NotoSans-Regular.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: block; }
+@font-face { font-family: "Trebuchet MS"; src: url("assets/fonts/DejaVuSans-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Trebuchet MS"; src: url("assets/fonts/LiberationSans-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: block; unicode-range: U+2190-22FF; }
+@font-face { font-family: "Trebuchet MS"; src: url("assets/fonts/NotoSans-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: block; }
+@font-face { font-family: "Trebuchet MS"; src: url("assets/fonts/DejaVuSans.woff2") format("woff2"); font-style: italic; font-weight: 400; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Trebuchet MS"; src: url("assets/fonts/LiberationSans-Regular.woff2") format("woff2"); font-style: italic; font-weight: 400; font-display: block; unicode-range: U+2190-22FF; }
+@font-face { font-family: "Trebuchet MS"; src: url("assets/fonts/NotoSans-Italic.woff2") format("woff2"); font-style: italic; font-weight: 400; font-display: block; }
+@font-face { font-family: "Trebuchet MS"; src: url("assets/fonts/DejaVuSans-Bold.woff2") format("woff2"); font-style: italic; font-weight: 700; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Trebuchet MS"; src: url("assets/fonts/LiberationSans-Bold.woff2") format("woff2"); font-style: italic; font-weight: 700; font-display: block; unicode-range: U+2190-22FF; }
+@font-face { font-family: "Trebuchet MS"; src: url("assets/fonts/NotoSans-BoldItalic.woff2") format("woff2"); font-style: italic; font-weight: 700; font-display: block; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/DejaVuSans.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/LiberationSans-Regular.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: block; unicode-range: U+2190-22FF; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/NotoSans-Regular.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: block; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/DejaVuSans-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/LiberationSans-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: block; unicode-range: U+2190-22FF; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/NotoSans-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: block; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/DejaVuSans.woff2") format("woff2"); font-style: italic; font-weight: 400; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/LiberationSans-Regular.woff2") format("woff2"); font-style: italic; font-weight: 400; font-display: block; unicode-range: U+2190-22FF; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/NotoSans-Italic.woff2") format("woff2"); font-style: italic; font-weight: 400; font-display: block; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/DejaVuSans-Bold.woff2") format("woff2"); font-style: italic; font-weight: 700; font-display: block; unicode-range: U+2000-2BFF; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/LiberationSans-Bold.woff2") format("woff2"); font-style: italic; font-weight: 700; font-display: block; unicode-range: U+2190-22FF; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/NotoSans-BoldItalic.woff2") format("woff2"); font-style: italic; font-weight: 700; font-display: block; }
+@font-face { font-family: "DejaVu Sans Mono"; src: url("assets/fonts/DejaVuSansMono.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: block; }
+@font-face { font-family: "DejaVu Sans Mono"; src: url("assets/fonts/DejaVuSansMono-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: block; }

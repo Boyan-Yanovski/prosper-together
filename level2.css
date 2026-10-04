@@ -1,0 +1,35 @@
+:root {--healer:#397e72;--organizer:#996077;}
+html[data-level="2"] .game-board {background-image:linear-gradient(#001c1710,#001c1710),url('assets/storybook-table-level2-raised.webp') !important;background-size:100% 100% !important;}
+html[data-level="2"] .peer-column {position:absolute;top:43px;bottom:8px;width:calc(244px * var(--card-scale) + 10px);z-index:5;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain;touch-action:pinch-zoom;padding:5px;box-sizing:border-box;}
+html[data-level="2"] .peer-column::-webkit-scrollbar {display:none;}
+html[data-level="2"] #gameApp {touch-action:pinch-zoom;}
+html[data-level="2"] #gameApp.peer-dragging {cursor:grabbing;user-select:none;}
+html[data-level="2"] .peer-column[data-side="left"] {left:3px;}
+html[data-level="2"] .peer-column[data-side="right"] {right:3px;}
+/* Reuse Level 1's card component, including intrinsic widths and all inner
+   styles. Zoom applies its whole-card scale in normal flow, so the scroll
+   height follows the visible cards (transform/scale alone would leave gaps). */
+html[data-level="2"] .peer-column .seat {position:relative !important;inset:auto !important;transform:none !important;scale:none !important;rotate:none !important;zoom:var(--card-scale);margin:0 0 14px;}
+html[data-level="2"] .peer-column .seat:last-child {margin-bottom:5px;}
+html[data-level="2"] .seat[data-role="healer"] {--role:var(--healer);--seat-paper:#e2eee1;--seat-ink:#344c3e;--seat-muted:#708778;background:repeating-linear-gradient(-28deg,transparent 0 20px,#397e7210 21px 22px),#e2eee1;border-color:#59998a;border-radius:21px 10px 22px 12px;}
+html[data-level="2"] .seat[data-role="organizer"] {--role:var(--organizer);--seat-paper:#f0e2e5;--seat-ink:#543a42;--seat-muted:#957884;background:repeating-linear-gradient(0deg,transparent 0 20px,#99607716 21px 22px),#f0e2e5;border-color:#996077;border-radius:10px 20px 13px 19px;}
+html[data-level="2"] .seat[data-role="healer"] .role-icon {background-image:url('assets/portraits/healer-med.webp') !important;background-size:cover !important;background-position:center !important;}
+html[data-level="2"] .seat[data-role="organizer"] .role-icon {background-image:url('assets/portraits/organizer-med.webp') !important;background-size:cover !important;background-position:center !important;}
+html[data-level="2"] .seat[data-role="healer"][data-tier="low"] .role-icon {background-image:url('assets/portraits/healer-low.webp') !important;}
+html[data-level="2"] .seat[data-role="healer"][data-tier="high"] .role-icon {background-image:url('assets/portraits/healer-high.webp') !important;}
+html[data-level="2"] .seat[data-role="organizer"][data-tier="low"] .role-icon {background-image:url('assets/portraits/organizer-low.webp') !important;}
+html[data-level="2"] .seat[data-role="organizer"][data-tier="high"] .role-icon {background-image:url('assets/portraits/organizer-high.webp') !important;}
+html[data-level="2"] .mix-zone {max-width:48vw;gap:5px;}
+html[data-level="2"] .common-good {--good-size:52px !important;}
+@media (max-height:600px) and (orientation:landscape) {
+  html[data-level="2"] .common-good {--good-size:36px !important;}
+  html[data-level="2"] .mix-zone {gap:3px;}
+}
+html[data-level="2"] .mission-win {width:min(800px,calc(100% - 24px));}
+@media (orientation:landscape) and (max-height:600px) {
+  html[data-level="2"] .mission-win ol {grid-template-columns:1fr 1fr;}
+  html[data-level="2"] .mission-win li {grid-template-columns:16px 28px 1fr auto;gap:5px;}
+  html[data-level="2"] .mission-win .mission-role {display:block;margin:0;font-size:8px;}
+  html[data-level="2"] .mission-win .mission-score {display:block;font-size:17px;}
+  html[data-level="2"] .mission-win .mission-score small {font-size:8px;}
+}
