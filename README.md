@@ -15,6 +15,10 @@ widens the circle to seven.
 The game runs in the browser on computers, tablets and phones (held sideways).
 On a phone it can be added to the home screen and then opens like an app.
 
+The model behind the game (how production works, where its equilibria lie and
+how the other players decide) is set out in the companion paper:
+[Prosper Together: the model behind the game (PDF)](https://boyan-yanovski.github.io/prosper-together/prosper-together-paper.pdf).
+
 Created by Boyan Yanovski with the help of AI/SI friends.
 
 ---
