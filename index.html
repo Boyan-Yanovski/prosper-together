@@ -7283,7 +7283,7 @@
          be read. The felt lets a little of the market painting show through.
          Where there is more than a screen of it (a phone held upright), the
          screen scrolls as before. */
-      body:not([data-view="title"]) .opening-flow { padding: 0; }
+      body:not([data-view="title"]):not([data-view="farewell"]) .opening-flow { padding: 0; }
       .opening-stage:not(.opening-stage--title) {
         --stage-edge-y: clamp(16px, 3svh, 30px);
         --stage-edge-x: clamp(18px, 3vw, 46px);
@@ -8191,13 +8191,21 @@
     /* The series' title alone over the market at night, before the table
        is laid: the question, the five trades' threads, and one way in. */
     .opening-stage.opening-stage--title {
+      display: flex;
       width: min(1100px, 100%);
       max-height: none;
       overflow: visible;
+      /* The whole height of the screen, as a column: the words in the middle
+         of the room above the credit, the credit at the foot. Both take real
+         room, so they cannot overlap, and on a short screen the page is no
+         taller than its words and the credit. */
+      align-self: stretch;
+      flex-direction: column;
       border: 0;
       background: none;
       box-shadow: none;
     }
+    .opening-stage--title > .title-page { margin-block: auto; }
     .opening-stage.opening-stage--title::before { content: none; }
     /* A pool of shade behind the words, so they read over the painting. It
        is the page's own background, fading out before the page's edges, so
@@ -8313,6 +8321,7 @@
       .title-page > :nth-child(3) { animation-delay: .26s; }
       .title-page > :nth-child(4) { animation-delay: .36s; }
       .title-page > .title-page-play { animation: title-page-rise .9s .5s cubic-bezier(.2,.7,.2,1) both, title-page-glow 3.2s 1.6s ease-in-out infinite; }
+      .opening-stage--title > .title-page-credit { animation: title-page-rise .9s .9s cubic-bezier(.2,.7,.2,1) both; }
       .opening-stage--title.leaving { opacity: 0; transition: opacity .38s ease; }
       .opening-stage.arriving { animation: title-page-rise .5s cubic-bezier(.2,.7,.2,1) both; }
     }
@@ -8343,9 +8352,10 @@
     }
     .title-page-help svg { flex: none; width: 26px; height: 26px; color: #e0b65d; }
     .title-page-help strong { color: #f7e8c5; font-weight: 700; }
-    /* Who made it: the last and quietest line of the page. */
+    /* Who made it: the quietest line, at the foot of the screen. */
     .title-page-credit {
-      margin: clamp(2px, 1svh, 10px) 0 0;
+      align-self: center;
+      margin: clamp(2px, 1svh, 10px) 0 clamp(0px, 1.4svh, 12px);
       color: rgba(247,232,197,.6);
       font-family: Georgia, "Times New Roman", serif;
       font-size: clamp(.7rem, 1.15vw, .86rem);
@@ -8358,7 +8368,7 @@
        the page closes up so both lines under Play still fit. */
     @media (max-height: 460px) {
       .title-page { padding-block: 8px; gap: 7px; }
-      .title-page-credit { margin-top: 0; }
+      .title-page-credit { margin-block: 2px; }
     }
     @media (max-height: 380px) {
       .title-page { padding-block: 3px; gap: 4px; }
@@ -8368,7 +8378,7 @@
       .title-page-part .part-tale { margin-top: .1em; }
       .title-page-play { margin-top: 2px; padding-block: 6px; }
       .title-page-play-icon { width: 38px; height: 38px; }
-      .title-page-credit { font-size: .66rem; }
+      .title-page-credit { margin-block: 0; font-size: .66rem; }
     }
     /* Installing, recommended on phones and tablets until it is done. */
     .install-help { display: none; }
@@ -8443,52 +8453,222 @@
     .topbar .menu-button { display: none; }
     html[data-mode="player"] .topbar .menu-button { display: inline-flex; }
 
-    /* The menu: a paper panel under the toolbar, cut like the sound panel. */
+    /* For players, the easy way, sound and the menu are drawn a tenth larger
+       than the sizes given above (2026-10-04). The whole corner is scaled,
+       so edges, stitching and signs grow together; what opens beneath the
+       tools keeps its own size. The developer's toolbar holds seven tools
+       and has no room to grow on a phone, so it stays as it was. */
+    html { --tool-zoom: 1; }
+    html[data-mode="player"] { --tool-zoom: 1.1; }
+    .top-right,
+    .opening-tools { zoom: var(--tool-zoom); }
+    .top-right .sound-panel,
+    .top-right .game-menu,
+    .opening-tools .game-menu { zoom: calc(1 / var(--tool-zoom)); }
+
+    /* The menu: a walnut plaque hung under the tools, cut from the same
+       stock as their frame and the Next turn button. A brass edge, a line of
+       stitching inside it, gilt lettering, and each entry's sign on a brass
+       stud. */
     .game-menu {
       position: absolute;
       z-index: 60;
-      top: calc(100% + 9px);
+      top: calc(100% + 10px);
       right: 0;
       display: grid;
-      width: min(236px, calc(100vw - 20px));
-      padding: 6px;
-      border: 1px solid rgba(87,55,29,.3);
-      border-radius: 14px 12px 15px 13px;
+      width: min(240px, calc(100vw - 20px));
+      padding: 8px;
+      border: 1px solid rgba(224,182,93,.78);
+      border-radius: 15px 12px 17px 13px;
       background:
-        repeating-linear-gradient(4deg, transparent 0 7px, rgba(99,61,29,.03) 8px 9px),
-        linear-gradient(#fffaf0, #f3e6cd);
-      box-shadow: inset 0 0 0 2px rgba(255,250,222,.55), 0 4px 0 #b29162, 0 16px 30px rgba(40,24,12,.32);
-      color: var(--ink);
+        radial-gradient(ellipse at 28% -12%, rgba(255,214,132,.2), transparent 58%),
+        repeating-linear-gradient(6deg, transparent 0 8px, rgba(237,193,109,.04) 9px 10px),
+        linear-gradient(150deg, #704729, #331e14);
+      box-shadow:
+        inset 0 0 0 2px rgba(31,19,14,.58),
+        0 4px 0 #1d120d,
+        0 18px 34px rgba(0,0,0,.5);
+      color: #ffe7b0;
       text-align: left;
     }
     .game-menu[hidden] { display: none; }
+    .game-menu::before {
+      position: absolute;
+      inset: 4px;
+      border: 1px dashed rgba(229,190,117,.3);
+      border-radius: 11px 9px 13px 10px;
+      content: "";
+      pointer-events: none;
+    }
     .game-menu-item {
+      position: relative;
       display: grid;
-      min-height: 44px;
-      padding: 7px 10px;
-      grid-template-columns: 22px minmax(0, 1fr);
+      min-height: 46px;
+      padding: 7px 14px 7px 8px;
+      grid-template-columns: 30px minmax(0, 1fr);
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       border: 0;
-      border-radius: 9px 8px 10px 8px;
+      border-radius: 8px 7px 9px 7px;
       background: transparent;
       color: inherit;
       cursor: pointer;
       font: inherit;
       text-align: left;
+      transition: background-color .14s ease;
     }
-    .game-menu-item + .game-menu-item { border-top: 1px dashed rgba(87,55,29,.24); border-top-left-radius: 0; border-top-right-radius: 0; }
-    .game-menu-item:hover { background: rgba(255,244,208,.9); }
-    .game-menu-item:focus-visible { outline: 2px solid #8a5a2c; outline-offset: -2px; }
-    .game-menu-item svg { width: 20px; height: 20px; color: #6b4a2c; }
-    .game-menu-text { display: grid; gap: 2px; }
-    .game-menu-label { font-family: Georgia, "Times New Roman", serif; font-size: .92rem; font-weight: 700; letter-spacing: .01em; }
+    /* A gilt rule between entries, fading at both ends. */
+    .game-menu-item + .game-menu-item::before {
+      position: absolute;
+      top: 0;
+      right: 10px;
+      left: 10px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(224,182,93,.5) 16%, rgba(224,182,93,.5) 84%, transparent);
+      content: "";
+    }
+    .game-menu-item:hover { background-color: rgba(255,214,132,.11); }
+    .game-menu-item:active { background-color: rgba(255,214,132,.18); }
+    .game-menu-item:focus-visible { outline: 2px solid #f3c869; outline-offset: -3px; }
+    .game-menu-item svg {
+      box-sizing: border-box;
+      width: 30px;
+      height: 30px;
+      padding: 6.5px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #f6d98f, #c9963f 60%, #8a5f24);
+      box-shadow: inset 0 0 0 1px rgba(255,240,200,.5), 0 2px 3px rgba(0,0,0,.42);
+      color: #4a2d14;
+    }
+    .game-menu-text { display: grid; gap: 3px; }
+    .game-menu-label {
+      color: #ffe7b0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: .95rem;
+      letter-spacing: .035em;
+      text-shadow: 0 1px 1px #29170e;
+    }
     /* A step that loses the turns played is asked for twice, here in the
        menu, rather than in a browser dialog that would end full screen. */
-    .game-menu-confirm { display: none; color: #8a3324; font-size: .72rem; font-weight: 750; line-height: 1.25; }
-    .game-menu-item[data-confirming] { background: #f8e2c9; }
-    .game-menu-item[data-confirming] svg { color: #a8352a; }
+    .game-menu-confirm { display: none; color: #ffc9ad; font-size: .72rem; font-weight: 700; line-height: 1.25; }
+    .game-menu-item[data-confirming] { background-color: rgba(176,58,40,.3); }
+    .game-menu-item[data-confirming] svg { background: radial-gradient(circle at 35% 30%, #f6b39d, #c4513a 60%, #7d2a1c); color: #fff1e4; }
     .game-menu-item[data-confirming] .game-menu-confirm { display: block; }
+
+    /* The way out on the screens without a toolbar, in their top right
+       corner. They scroll away with the screen where it scrolls. */
+    .opening-flow {
+      --tools-top: max(clamp(8px, 2svh, 20px), calc(env(safe-area-inset-top) + 6px));
+      --tools-right: max(clamp(12px, 2.2vw, 34px), calc(env(safe-area-inset-right) + 8px));
+    }
+    /* After the first page: the table's own frame of tools, with its menu. */
+    .opening-tools {
+      position: absolute;
+      z-index: 7;
+      top: calc(var(--tools-top) / var(--tool-zoom));
+      right: calc(var(--tools-right) / var(--tool-zoom));
+      padding: 3px 5px 5px;
+      border: 1px solid rgba(220,176,91,.58);
+      border-radius: 12px 10px 13px 11px;
+      background:
+        radial-gradient(circle at 24% 8%, rgba(255,211,127,.12), transparent 28%),
+        repeating-linear-gradient(6deg, transparent 0 8px, rgba(237,193,109,.035) 9px 10px),
+        linear-gradient(150deg, rgba(94,59,37,.96), rgba(45,27,19,.97));
+      box-shadow:
+        inset 0 0 0 2px rgba(31,19,14,.58),
+        0 3px 0 #1d120d,
+        0 9px 20px rgba(0,0,0,.34);
+    }
+    .opening-tools::before {
+      position: absolute;
+      inset: 2px;
+      border: 1px dashed rgba(229,190,117,.25);
+      border-radius: 12px 10px 14px 11px;
+      content: "";
+      pointer-events: none;
+    }
+    body[data-view="title"] .opening-tools,
+    body[data-view="farewell"] .opening-tools { display: none; }
+    .opening-tools .icon-button {
+      position: relative;
+      z-index: 1;
+      width: 32px;
+      min-width: 32px;
+      height: 32px;
+      padding: 0;
+      border: 1px solid #ddb866;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 26%, rgba(255,235,174,.28) 0 8%, transparent 9%),
+        repeating-radial-gradient(circle at center, transparent 0 8px, rgba(78,43,20,.055) 9px 10px),
+        linear-gradient(145deg, #bd8b45, #71451f);
+      box-shadow:
+        inset 0 0 0 2px rgba(69,38,19,.48),
+        inset 0 0 0 3px rgba(252,218,145,.22),
+        0 2px 0 #26160e,
+        0 5px 10px rgba(0,0,0,.3);
+      color: #fff0bf;
+      transition: translate .16s var(--ease), filter .16s ease, box-shadow .16s ease;
+    }
+    .opening-tools .icon-button svg { width: 15px; height: 15px; }
+    .opening-tools .icon-button:hover { background-color: transparent; filter: brightness(1.13) saturate(1.05); translate: 0 -1px; transform: none; }
+    .opening-tools .icon-button:active {
+      box-shadow: inset 0 0 0 2px rgba(69,38,19,.58), inset 0 0 0 3px rgba(252,218,145,.17), 0 1px 0 #26160e;
+      translate: 0 2px;
+    }
+    /* The headings keep clear of it. */
+    .opening-heading,
+    .opening-guide-heading { padding-right: 52px; }
+    /* On the first page: a walnut tab that says what it does. */
+    .opening-quit {
+      position: absolute;
+      z-index: 7;
+      top: var(--tools-top);
+      right: var(--tools-right);
+      display: none;
+      min-height: 36px;
+      padding: 0 15px 0 6px;
+      align-items: center;
+      gap: 9px;
+      border: 1px solid rgba(243,200,105,.72);
+      border-radius: 999px;
+      background:
+        repeating-linear-gradient(-5deg, transparent 0 8px, rgba(255,226,156,.05) 9px 10px),
+        linear-gradient(180deg, rgba(128,86,44,.94), rgba(74,46,24,.95));
+      box-shadow: inset 0 0 0 1.5px rgba(41,24,15,.5), 0 3px 0 #24150d, 0 9px 20px rgba(0,0,0,.45);
+      color: #fbe6b4;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: .84rem;
+      letter-spacing: .05em;
+      text-shadow: 0 1px 2px rgba(0,0,0,.5);
+      cursor: pointer;
+      transition: filter .16s ease, translate .16s ease;
+    }
+    body[data-view="title"] .opening-quit { display: inline-flex; }
+    .opening-quit:hover { filter: brightness(1.12); translate: 0 -1px; }
+    .opening-quit:active { translate: 0 2px; }
+    .opening-quit:focus-visible { outline: 2px solid #f3c869; outline-offset: 3px; }
+    .opening-quit svg {
+      box-sizing: border-box;
+      width: 25px;
+      height: 25px;
+      padding: 5px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #f6d98f, #c9963f 60%, #8a5f24);
+      box-shadow: inset 0 0 0 1px rgba(255,240,200,.5), 0 1px 3px rgba(0,0,0,.4);
+      color: #4a2d14;
+    }
+    /* A finger-sized target around the tab. */
+    .opening-quit::after { position: absolute; inset: -6px -6px -8px; content: ""; }
+    /* A phone held sideways: the title begins close to the top, so the tab
+       is cut smaller and sits higher. */
+    @media (max-height: 380px) {
+      .opening-quit { top: max(5px, env(safe-area-inset-top)); min-height: 29px; padding: 0 12px 0 4px; gap: 7px; font-size: .76rem; }
+      .opening-quit svg { width: 21px; height: 21px; padding: 4px; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .opening-quit { animation: title-page-rise .9s .9s cubic-bezier(.2,.7,.2,1) both; }
+    }
     /* The other level, opened in a frame over this page (openLevelInFrame).
        It stays clear of a phone's camera cut-out, as the page itself does. */
     .level-frame {
@@ -8508,11 +8688,13 @@
     body[data-view="level-frame"] > :not(.level-frame) { display: none !important; }
     /* The same way back on the home screen, the guide and the briefings, which
        have no toolbar: a small tab at the top of the screen, shown only on a
-       phone or tablet that has left full screen. (The first page has Play.) */
+       phone or tablet that has left full screen. (The first page has Play.)
+       It hangs left of the middle: with the menu button in the corner, the
+       home screen's second heading begins at the middle of a phone's screen. */
     .opening-fullscreen {
       position: fixed;
       top: max(3px, env(safe-area-inset-top));
-      left: 50%;
+      left: 30%;
       z-index: 6;
       display: none;
       height: 22px;
@@ -8527,13 +8709,12 @@
       font-size: .66rem;
       font-weight: 800;
       letter-spacing: .04em;
-      translate: -50% 0;
       cursor: pointer;
     }
     .opening-fullscreen svg { width: 12px; height: 12px; }
     /* A finger-sized target around the small tab. */
     .opening-fullscreen::after { position: absolute; inset: -6px -8px -12px; content: ""; }
-    html[data-fullscreen-able]:not([data-fullscreen]) body:not([data-view="title"]) .opening-fullscreen { display: inline-flex; }
+    html[data-fullscreen-able]:not([data-fullscreen]) body:not([data-view="title"]):not([data-view="farewell"]) .opening-fullscreen { display: inline-flex; }
     /* The toolbar's way back into full screen, for when the player has left it. */
     .topbar .fullscreen-button { display: none; }
     html[data-fullscreen-able]:not([data-fullscreen]) .topbar .fullscreen-button { display: inline-flex; }
@@ -8695,6 +8876,23 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg>
       <span data-ui-key="t449">Full screen</span>
     </button>
+    <!-- The way out of the game on these screens: on the first page a button
+         of its own; after it the table's menu button, holding only Quit. -->
+    <button class="opening-quit" id="titleQuit" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8v7.7"/><path d="M7.4 6.9a7.3 7.3 0 1 0 9.2 0"/></svg>
+      <span data-ui-key="t467">Quit game</span>
+    </button>
+    <div class="opening-tools" id="openingTools">
+      <button class="icon-button menu-button" id="openingMenuButton" type="button" aria-label="Open the menu" aria-haspopup="menu" aria-expanded="false" aria-controls="openingMenu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>
+      </button>
+      <div class="game-menu" id="openingMenu" role="menu" aria-label="Menu" hidden>
+        <button class="game-menu-item" id="openingMenuQuit" type="button" role="menuitem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8v7.7"/><path d="M7.4 6.9a7.3 7.3 0 1 0 9.2 0"/></svg>
+          <span class="game-menu-text" data-ui-key="t468"><span class="game-menu-label" data-ui-key="t469">Quit game</span><span class="game-menu-confirm" data-ui-key="t470">Tap again to quit. The turns you played are lost.</span></span>
+        </button>
+      </div>
+    </div>
     <div class="opening-stage opening-stage--intro" id="openingIntro">
       <header class="opening-heading">
         <div data-ui-key="t284">
@@ -9021,7 +9219,22 @@
         <p class="device-help title-page-help" data-help-for="turn" data-ui-key="t435"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="10" width="18" height="10" rx="2"/><path d="M17.5 13v4"/><path d="M6.8 7.2a8 8 0 0 1 10.6-2.4"/><path d="m18.3 2.4-.8 2.5-2.5-.6"/></svg><span data-ui-key="t436">Turn your screen sideways to play.</span></p>
         <p class="title-page-help install-help" data-install-for="android" data-ui-key="t441"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.2"/><path d="M12 6.5v7M9 10.8l3 3 3-3"/><path d="M10.5 18.2h3"/></svg><span data-ui-key="t442">For the best experience, install the game: in the browser's menu (⋮), choose <strong data-ui-key="t443">Install app</strong> or <strong data-ui-key="t444">Add to Home screen</strong>.</span></p>
         <p class="title-page-help install-help" data-install-for="apple" data-ui-key="t445"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11.5M8.5 6.5 12 3l3.5 3.5"/><path d="M8.5 10H7a1.5 1.5 0 0 0-1.5 1.5v8A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 17 10h-1.5"/></svg><span data-ui-key="t446">For the best experience, install the game: tap <strong data-ui-key="t447">Share</strong>, then <strong data-ui-key="t448">Add to Home Screen</strong>.</span></p>
-        <p class="title-page-credit" id="titlePageCredit">Created by Boyan Yanovski with the help of AI/SI friends</p>
+      </div>
+      <p class="title-page-credit" id="titlePageCredit">Created by Boyan Yanovski with the help of AI/SI friends</p>
+    </div>
+
+    <!-- The last page, where the browser will not let the game close its own
+         window (see quitGame). -->
+    <div class="opening-stage opening-stage--title" id="openingFarewell" hidden>
+      <div class="title-page" data-ui-key="t471">
+        <p class="title-page-kicker" data-ui-key="t472">Market Mysteries</p>
+        <h2 class="title-page-heading" id="farewellHeading">Thank you for playing</h2>
+        <div class="title-page-threads" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <p class="title-page-part" id="farewellNote">You can close this window now.</p>
+        <button class="title-page-play" id="farewellPlay" type="button">
+          <span class="title-page-play-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.8v14.4a.8.8 0 0 0 1.2.7l11.3-7.2a.8.8 0 0 0 0-1.4L8.2 4.1a.8.8 0 0 0-1.2.7Z"/></svg></span>
+          <span data-ui-key="t473">Play again</span>
+        </button>
       </div>
     </div>
   </section>
@@ -9096,6 +9309,10 @@
             <button class="game-menu-item" id="menuHome" type="button" role="menuitem">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5"/><path d="M6.5 10v9h11v-9"/><path d="M10 19v-5h4v5"/></svg>
               <span class="game-menu-text" data-ui-key="t460"><span class="game-menu-label" data-ui-key="t461">Home screen</span><span class="game-menu-confirm" data-ui-key="t462">Tap again to leave. The turns you played are lost.</span></span>
+            </button>
+            <button class="game-menu-item" id="menuQuit" type="button" role="menuitem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8v7.7"/><path d="M7.4 6.9a7.3 7.3 0 1 0 9.2 0"/></svg>
+              <span class="game-menu-text" data-ui-key="t474"><span class="game-menu-label" data-ui-key="t475">Quit game</span><span class="game-menu-confirm" data-ui-key="t476">Tap again to quit. The turns you played are lost.</span></span>
             </button>
           </div>
           <div class="sound-panel" id="soundPanel" role="group" aria-labelledby="soundPanelTitle" hidden>
@@ -9449,7 +9666,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.9.3-credit';
+    const APP_VERSION = '12.10.0-quit';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
@@ -10114,6 +10331,22 @@
       document.documentElement.toggleAttribute('data-fullscreen', inFullscreen());
     }
 
+    /* Out of full screen because the player is leaving the game: their next
+       tap does not bring it back. */
+    function leaveFullscreen() {
+      resumeFullscreen = false;
+      if (PHONE_PREVIEW) {
+        try { sessionStorage.removeItem(PRETEND_FULLSCREEN_KEY); } catch {}
+        noteFullscreen();
+        return;
+      }
+      if (!inFullscreen()) return;
+      const hostDocument = fullscreenHost().document;
+      try {
+        Promise.resolve((hostDocument.exitFullscreen || hostDocument.webkitExitFullscreen)?.call(hostDocument)).catch(() => {});
+      } catch { /* nothing to leave */ }
+    }
+
     /* Going to the home screen, or the phone locking, ends full screen, and
        the browser does not reliably tell the page. So the page reads the state
        again whenever it comes back, and a player who was in full screen when
@@ -10203,6 +10436,7 @@
       $('#openingIntro').hidden = true;
       $('#openingGuide').hidden = true;
       $('#levelBriefing').hidden = true;
+      $('#openingFarewell').hidden = true;
       document.body.dataset.view = 'title';
       requestAnimationFrame(() => $('#titlePagePlay')?.focus({ preventScroll: true }));
     }
@@ -10281,6 +10515,42 @@
       showOpeningIntro();
     }
     window.closeLevelFrame = closeLevelFrame;
+
+    /* Quit. A browser lets a page close its own window in some cases only:
+       an installed game, or a tab with no page to go back to. So the game
+       asks, and where the window is still there a moment later, the game is
+       put away behind a last page that says the window can be closed. A
+       level in a frame asks the page around it, whose window it is. */
+    function quitGame() {
+      if (IN_LEVEL_FRAME) {
+        try {
+          if (typeof window.parent.quitGame === 'function') { window.parent.quitGame(); return; }
+        } catch { /* fall through */ }
+      }
+      setGameMenuOpen(false);
+      setOpeningMenuOpen(false);
+      AUDIO.configure({ enabled: false });
+      leaveFullscreen();
+      window.close();
+      setTimeout(() => { if (!window.closed) showFarewell(); }, 200);
+    }
+    window.quitGame = quitGame;
+
+    function showFarewell() {
+      document.querySelector('.level-frame')?.remove();
+      $('#levelStartButton').removeAttribute('aria-busy');
+      guideReturnsToGame = false;
+      resetGame(false);
+      $('#gameApp').inert = true;
+      $('#gameApp').setAttribute('aria-hidden', 'true');
+      const flow = $('#openingFlow');
+      flow.hidden = false;
+      flow.setAttribute('aria-labelledby', 'farewellHeading');
+      for (const stage of ['#openingTitlePage', '#openingIntro', '#openingGuide', '#levelBriefing']) $(stage).hidden = true;
+      $('#openingFarewell').hidden = false;
+      document.body.dataset.view = 'farewell';
+      requestAnimationFrame(() => $('#farewellPlay')?.focus({ preventScroll: true }));
+    }
 
     function showOpeningGuide(slide = 0) {
       const flow = $('#openingFlow');
@@ -14798,16 +15068,51 @@
       setGameMenuOpen(false);
       leaveLevelForHome();
     });
+    $('#menuQuit').addEventListener('click', event => {
+      if (confirmedInMenu(event.currentTarget)) quitGame();
+    });
+
+    /* The same menu button on the home screen, the guide and the briefings,
+       where it holds only the way out; the first page has a button for it. */
+    function setOpeningMenuOpen(open) {
+      $('#openingMenu').hidden = !open;
+      $('#openingMenuButton').setAttribute('aria-expanded', String(open));
+      $('#openingMenuQuit').removeAttribute('data-confirming');
+    }
+    $('#openingMenuButton').addEventListener('click', () => {
+      const open = $('#openingMenu').hidden;
+      AUDIO.cue(open ? 'dialog-open' : 'dialog-close');
+      setOpeningMenuOpen(open);
+      if (open) $('#openingMenuQuit').focus({ preventScroll: true });
+    });
+    $('#openingMenuQuit').addEventListener('click', event => {
+      if (confirmedInMenu(event.currentTarget)) quitGame();
+    });
+    $('#titleQuit').addEventListener('click', quitGame);
+    $('#farewellPlay').addEventListener('click', () => {
+      AUDIO.configure({ enabled: true });
+      showOpeningTitle();
+    });
+
+    const MENUS = [
+      { menu: $('#gameMenu'), button: $('#menuButton'), setOpen: setGameMenuOpen },
+      { menu: $('#openingMenu'), button: $('#openingMenuButton'), setOpen: setOpeningMenuOpen },
+    ];
     document.addEventListener('pointerdown', event => {
-      if (!$('#gameMenu').hidden && !event.target.closest?.('#gameMenu, #menuButton')) setGameMenuOpen(false);
+      for (const { menu, button, setOpen } of MENUS) {
+        if (!menu.hidden && !menu.contains(event.target) && !button.contains(event.target)) setOpen(false);
+      }
     });
     document.addEventListener('keydown', event => {
-      if ($('#gameMenu').hidden) return;
+      const shown = MENUS.find(({ menu }) => !menu.hidden);
+      if (!shown) return;
       if (event.key === 'Escape') {
-        setGameMenuOpen(false);
-        $('#menuButton').focus({ preventScroll: true });
+        // The menu alone closes: not also the guide it may be open over.
+        event.stopImmediatePropagation();
+        shown.setOpen(false);
+        shown.button.focus({ preventScroll: true });
       } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-        const items = [...document.querySelectorAll('.game-menu-item')];
+        const items = [...shown.menu.querySelectorAll('.game-menu-item')];
         const at = items.indexOf(document.activeElement);
         event.preventDefault();
         items[(at + (event.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length].focus({ preventScroll: true });
