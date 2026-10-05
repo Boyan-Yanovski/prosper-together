@@ -2247,47 +2247,118 @@
     .dialog-action.primary:hover { background: #3b6b5d; }
     .dialog-action.subtle { margin-right: auto; background: transparent; box-shadow: none; color: var(--muted); }
 
+    /* Game over, the win screen and the easy way share the opening screens'
+       stage: dark felt inside a gilt edge and a second gilt line, the words
+       in parchment, and whatever is an object (a ledger, a ballot, a
+       standing) as paper laid on the felt. Buttons are the briefing's walnut
+       and felt plaques; a close button is a brass stud from the toolbar. */
+    #defeatDialog,
+    #easyWayDialog {
+      border: 1px solid rgba(240,202,119,.55);
+      border-radius: 20px 15px 22px 17px;
+      /* The second gilt line, drawn as shadow so it stays put when the
+         window scrolls: a dark band, then a hair of gilt. */
+      box-shadow:
+        inset 0 0 0 6px #081f1a,
+        inset 0 0 0 7px rgba(224,182,93,.3),
+        inset 0 0 90px rgba(0,0,0,.4),
+        0 26px 70px rgba(0,0,0,.66);
+      color: #f7e8c5;
+      scrollbar-color: #ad8147 rgba(4,21,17,.5);
+    }
+    #defeatDialog::backdrop,
+    #easyWayDialog::backdrop { background: #031b16c4; backdrop-filter: blur(6px); }
+    #defeatDialog .dialog-head,
+    #easyWayDialog .dialog-head { align-items: center; border-bottom: 0; }
+    #defeatDialog .dialog-head::before,
+    #easyWayDialog .dialog-head::before { display: none; }
+    /* A gilt rule under the heading, as under the home screen's. */
+    #defeatDialog .dialog-head::after,
+    #easyWayDialog .dialog-head::after {
+      position: absolute;
+      right: 26px;
+      bottom: 0;
+      left: 26px;
+      height: 2px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, rgba(224,182,93,.8), rgba(224,182,93,.3) 44%, transparent 90%);
+      content: "";
+    }
+    #defeatDialog .dialog-head h2,
+    #easyWayDialog .dialog-head h2 { color: #fbefd2; text-shadow: 0 2px 14px rgba(0,0,0,.5); }
+    #defeatDialog .dialog-head p,
+    #easyWayDialog .dialog-head p { color: rgba(247,232,197,.76); }
+    #defeatDialog .icon-button,
+    #easyWayDialog .icon-button {
+      flex: 0 0 34px;
+      align-self: flex-start;
+      width: 34px;
+      min-width: 34px;
+      height: 34px;
+      min-height: 34px;
+      padding: 0;
+      border: 1px solid #ddb866;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 26%, rgba(255,235,174,.28) 0 8%, transparent 9%),
+        linear-gradient(145deg, #bd8b45, #71451f);
+      box-shadow:
+        inset 0 0 0 2px rgba(69,38,19,.48),
+        inset 0 0 0 3px rgba(252,218,145,.22),
+        0 2px 0 #26160e,
+        0 5px 10px rgba(0,0,0,.3);
+      color: #fff0bf;
+      transition: translate .16s var(--ease), filter .16s ease;
+    }
+    #defeatDialog .icon-button svg,
+    #easyWayDialog .icon-button svg { width: 15px; height: 15px; }
+    #defeatDialog .icon-button:hover,
+    #easyWayDialog .icon-button:hover { background-color: transparent; filter: brightness(1.13) saturate(1.05); translate: 0 -1px; transform: none; }
+    #defeatDialog .icon-button:active,
+    #easyWayDialog .icon-button:active { translate: 0 2px; }
+    #defeatDialog .icon-button:focus-visible,
+    #easyWayDialog .icon-button:focus-visible { outline: 2px solid #f3c869; outline-offset: 3px; }
+
+    /* Game over: the stage under a redder light, the player's worn face in a
+       brass ring, and the count of the last turns as a ledger. */
     #defeatDialog {
-      width: min(490px, calc(100% - 28px));
-      border: 2px solid #b28c4f;
-      border-radius: 21px 13px 23px 15px;
-      background: repeating-linear-gradient(0deg, transparent 0 25px, rgba(113,77,37,.035) 26px), #f3e3c3;
-      box-shadow: inset 0 0 0 4px #fff1d2, inset 0 0 0 6px #d9bb82, 0 24px 80px #061c18aa;
+      width: min(500px, calc(100% - 28px));
+      background:
+        radial-gradient(ellipse 70% 52% at 10% -8%, rgba(203,112,84,.2), transparent 72%),
+        repeating-linear-gradient(-4deg, transparent 0 17px, rgba(243,213,145,.022) 18px 19px),
+        linear-gradient(152deg, #12362e 0%, #0a231d 60%, #071c17 100%);
     }
-    #defeatDialog::backdrop { background: #061c18a6; backdrop-filter: blur(5px); }
-    #defeatDialog .dialog-head {
-      margin: 6px 6px 0;
-      padding: 20px 16px 18px;
-      align-items: center;
-      gap: 13px;
-      border-radius: 13px 7px 0 0;
-      border-bottom: 2px solid #b28c4f;
-      background: repeating-linear-gradient(-12deg, transparent 0 20px, #e6c68a06 21px 22px), linear-gradient(120deg, #234d41, #102f28);
-      box-shadow: inset 0 0 0 1px #ddbd7940;
-    }
-    #defeatDialog .dialog-head::before { display: none; }
+    #defeatDialog .dialog-head { padding: 28px 26px 17px; gap: 15px; }
+    #defeatDialog .dialog-head::after { background: linear-gradient(90deg, rgba(203,112,84,.9), rgba(224,182,93,.36) 46%, transparent 92%); }
     .defeat-portrait {
-      flex: 0 0 64px;
-      width: 64px;
-      height: 64px;
+      flex: 0 0 66px;
+      width: 66px;
+      height: 66px;
       object-fit: cover;
-      border: 3px solid #dab77b;
+      border: 2px solid #e2b85e;
       border-radius: 50%;
       background: #ead4ae;
-      box-shadow: 0 0 0 2px #72552f, 0 3px 10px #0006;
+      box-shadow: 0 0 0 4px #0a241e, 0 0 0 5px rgba(224,182,93,.38), 0 8px 18px rgba(0,0,0,.5);
     }
     #defeatDialog .defeat-heading { flex: 1; }
-    #defeatDialog .dialog-head h2 { color: #ffedc7; font-size: 1.8rem; }
-    #defeatDialog .dialog-head p { color: #e0d3b7; font-size: .74rem; line-height: 1.45; }
-    #defeatDialog #closeDefeat { flex: 0 0 32px; align-self: flex-start; width: 32px; min-width: 32px; height: 32px; min-height: 32px; padding: 0; border-radius: 50%; }
-    #defeatDialog .defeat-body { padding: 20px 24px 24px; }
+    #defeatDialog .dialog-head h2 { font-size: 1.9rem; letter-spacing: .01em; }
+    #defeatDialog .dialog-head p { font-size: .76rem; line-height: 1.45; }
+    #defeatDialog .defeat-body { padding: 17px 26px 27px; }
+    /* The ledger: ruled paper with a double border, ink figures. */
     #defeatDialog .defeat-window {
-      padding: 15px;
+      padding: 15px 17px;
       gap: 12px;
-      border: 1px solid #bda174;
-      border-radius: 10px;
-      background: #fff6df99;
-      box-shadow: inset 0 0 0 3px #fff8e380, 0 2px 4px #65402113;
+      border: 1px solid rgba(111,74,40,.34);
+      border-radius: 4px 3px 5px 3px;
+      background:
+        repeating-linear-gradient(0deg, transparent 0 23px, rgba(113,77,37,.05) 24px),
+        #fbf1dc;
+      box-shadow:
+        inset 0 0 0 4px #fbf1dc,
+        inset 0 0 0 5px rgba(111,74,40,.2),
+        0 4px 0 rgba(0,0,0,.3),
+        0 14px 24px rgba(0,0,0,.3);
+      color: var(--ink);
     }
     #defeatDialog .defeat-window-bar {
       height: 10px;
@@ -2299,33 +2370,54 @@
     #defeatDialog .defeat-window-total { padding-top: 13px; border-top: 1px solid #bda174; }
     #defeatDialog .defeat-window-total .defeat-window-bar > span { background: linear-gradient(#b8654b, #8b3f30); }
     #defeatDialog .defeat-window-value .num-wellbeing { color: #854532; }
-    #defeatDialog .settings-actions { margin-top: 3px; justify-content: center; }
+    #defeatDialog .settings-actions { margin-top: 5px; justify-content: center; }
+    /* The briefing's Start plaque. */
     #defeatRestart {
-      min-width: 180px;
-      min-height: 42px;
-      border: 1px solid #92632e;
-      outline: 1px solid #c49b5d;
-      outline-offset: 3px;
-      border-radius: 8px;
-      background: linear-gradient(110deg, #d3a44f, #a86d34);
-      box-shadow: inset 0 1px 0 #ffe5a6, 0 3px 0 #76522e;
-      color: #fff6dc;
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: .9rem;
+      min-width: 190px;
+      min-height: 44px;
+      padding: 8px 22px;
+      border: 1px solid rgba(235,196,111,.6);
+      border-radius: 9px;
+      background: linear-gradient(180deg, #a87335, #65411f);
+      box-shadow: inset 0 1px 0 rgba(255,232,175,.2), 0 4px 0 #2b190e, 0 12px 20px rgba(0,0,0,.3);
+      color: #f7e8c5;
+      font-size: .92rem;
+      font-weight: 800;
       letter-spacing: .03em;
+      transition: filter .16s ease, translate .16s ease;
     }
-    #defeatRestart:hover { background: linear-gradient(110deg, #e1b35d, #b98042); }
-    #defeatRestart:focus-visible { outline: 3px solid #315c50; outline-offset: 4px; }
+    #defeatRestart:hover { background: linear-gradient(180deg, #a87335, #65411f); filter: brightness(1.14); transform: none; translate: 0 -1px; }
+    #defeatRestart:active { translate: 0 2px; }
+    #defeatRestart:focus-visible { outline: 2px solid #f3c869; outline-offset: 4px; }
     @media (max-width: 480px) {
-      #defeatDialog .dialog-head { padding: 16px 12px; gap: 10px; }
-      .defeat-portrait { flex-basis: 46px; width: 46px; height: 46px; }
+      #defeatDialog .dialog-head { padding: 22px 18px 14px; gap: 11px; }
+      .defeat-portrait { flex-basis: 48px; width: 48px; height: 48px; }
       #defeatDialog .dialog-head h2 { font-size: 1.5rem; }
-      #defeatDialog .defeat-body { padding: 16px 18px 22px; }
+      #defeatDialog .defeat-body { padding: 14px 18px 22px; }
     }
-    .defeat-body { display: grid; gap: 13px; }
-    .defeat-account { margin: 0; color: var(--ink); font-size: .82rem; line-height: 1.5; }
-    .defeat-account strong { font-weight: 850; }
-    .defeat-note { margin: 0; color: var(--muted); font-size: .7rem; line-height: 1.45; }
+    .defeat-body { display: grid; gap: 14px; }
+    /* A phone held sideways: the words and Restart on the left, the ledger
+       on the right, so that nothing has to be scrolled to. */
+    @media (orientation: landscape) and (max-height: 480px) {
+      #defeatDialog { width: min(740px, calc(100% - 28px)); max-height: calc(100dvh - 16px); }
+      #defeatDialog .dialog-head { padding: 18px 22px 12px; gap: 13px; }
+      .defeat-portrait { flex-basis: 52px; width: 52px; height: 52px; }
+      #defeatDialog .dialog-head h2 { font-size: 1.55rem; }
+      #defeatDialog .dialog-head::after { right: 22px; left: 22px; }
+      #defeatDialog .defeat-body {
+        padding: 14px 22px 21px;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+        align-items: start;
+        gap: 12px 22px;
+      }
+      #defeatDialog .defeat-account { grid-column: 1; grid-row: 1; }
+      #defeatDialog .defeat-window { grid-column: 2; grid-row: 1 / span 2; padding: 12px 15px; gap: 9px; }
+      #defeatDialog .settings-actions { grid-column: 1; grid-row: 2; align-self: end; justify-content: flex-start; margin-top: 0; }
+      #defeatRestart { min-width: 170px; min-height: 42px; }
+    }
+    .defeat-account { margin: 0; color: #f7e8c5; font-size: .85rem; line-height: 1.5; }
+    .defeat-account strong { color: #ffe7aa; font-weight: 850; }
+    .defeat-note { margin: 0; color: rgba(247,232,197,.74); font-size: .7rem; line-height: 1.45; }
 
     .defeat-window {
       display: grid;
@@ -7878,7 +7970,45 @@
        scrollbar. Past about 1200px, extra width would only lengthen lines. */
     dialog.dialog-wide { width: min(1200px, calc(100% - 32px)); }
 
-    .easy-way-body { container: easy-way / inline-size; padding-top: 16px; }
+    /* The easy way on the same stage (see Game over): its sign on a brass
+       seal beside the title, the argument in parchment across the felt, the
+       ballot as the one sheet of paper, and what the Commonwealth yields on
+       a walnut plaque beside the bare figure for autarky. */
+    #easyWayDialog {
+      background:
+        radial-gradient(ellipse 62% 46% at 11% -6%, rgba(255,214,132,.17), transparent 72%),
+        repeating-linear-gradient(-4deg, transparent 0 17px, rgba(243,213,145,.022) 18px 19px),
+        linear-gradient(152deg, #12362e 0%, #0a231d 60%, #071c17 100%);
+    }
+    #easyWayDialog .dialog-head { padding: 25px 26px 15px; gap: 15px; }
+    #easyWayDialog .dialog-head > div { flex: 1; min-width: 0; }
+    #easyWayDialog .dialog-head h2 { font-size: 1.62rem; letter-spacing: .01em; }
+    #easyWayDialog .dialog-head p { font-size: .8rem; line-height: 1.4; }
+    .easy-way-seal {
+      display: grid;
+      flex: 0 0 50px;
+      order: -1;
+      width: 50px;
+      height: 50px;
+      place-items: center;
+      border: 2px solid #e2b85e;
+      border-radius: 50%;
+      background: radial-gradient(circle at 38% 27%, #ffe19b, #9c6630 52%, #422619 100%);
+      box-shadow: inset 0 0 0 4px rgba(255,236,177,.17), 0 8px 18px rgba(0,0,0,.42);
+      color: #3a2213;
+    }
+    .easy-way-seal svg { width: 24px; height: 24px; }
+    /* A phone held sideways: a lower head leaves more of the argument in view. */
+    @media (orientation: landscape) and (max-height: 480px) {
+      #easyWayDialog .dialog-head { padding: 17px 22px 11px; gap: 12px; }
+      #easyWayDialog .dialog-head::after { right: 22px; left: 22px; }
+      #easyWayDialog .dialog-head h2 { font-size: 1.4rem; }
+      .easy-way-seal { flex-basis: 42px; width: 42px; height: 42px; }
+      .easy-way-seal svg { width: 20px; height: 20px; }
+      .easy-way-body { padding: 13px 22px 22px; }
+    }
+
+    .easy-way-body { container: easy-way / inline-size; padding: 16px 26px 26px; }
     .easy-way-body p { margin: 0; }
     .easy-way-layout { display: grid; gap: 14px; }
     .easy-way-col { display: grid; min-width: 0; align-content: start; gap: 10px; }
@@ -7886,19 +8016,31 @@
 
 
     .easy-way-lead {
-      color: var(--ink);
+      color: #f7e8c5;
       font-size: .85rem;
       line-height: 1.48;
       text-wrap: pretty;
     }
 
+    /* A gilt label with a short rule before it, as on the opening screens. */
     .easy-way-kicker {
+      display: flex;
       margin: 0 0 5px;
-      color: #8a5a2e;
+      align-items: center;
+      gap: 8px;
+      color: #e0b65d;
       font-size: .6rem;
       font-weight: 850;
-      letter-spacing: .14em;
+      letter-spacing: .15em;
       text-transform: uppercase;
+    }
+    .easy-way-kicker::before {
+      width: 18px;
+      height: 1px;
+      flex: 0 0 18px;
+      background: currentColor;
+      opacity: .7;
+      content: "";
     }
 
     /* The proposal is set as the ballot paper itself: plain stock, a ruled
@@ -7911,8 +8053,12 @@
       box-shadow:
         inset 0 0 0 4px #fffaf0,
         inset 0 0 0 5px rgba(111,74,40,.2),
-        0 3px 0 rgba(91,61,34,.12);
+        0 4px 0 rgba(0,0,0,.3),
+        0 14px 24px rgba(0,0,0,.3);
+      color: var(--ink);
     }
+    .easy-way-ballot .easy-way-kicker { color: #8a5a2e; }
+    .easy-way-ballot .easy-way-kicker::before { content: none; }
 
     .easy-way-ballot h3 {
       margin: 0 0 6px;
@@ -7927,18 +8073,21 @@
 
     .easy-way-outcomes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 
+    /* Without it: a figure set into the felt. */
     .easy-way-outcome {
       display: grid;
       align-content: start;
       gap: 3px;
       padding: 10px 14px 11px;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(224,182,93,.28);
       border-radius: 12px 9px 13px 10px;
-      background: #eee0c3;
+      background: rgba(3,16,13,.44);
+      box-shadow: inset 0 2px 9px rgba(0,0,0,.4);
+      color: rgba(247,232,197,.86);
     }
 
     .easy-way-outcome > span {
-      color: #75664f;
+      color: rgba(224,182,93,.86);
       font-size: .6rem;
       font-weight: 850;
       letter-spacing: .12em;
@@ -7957,18 +8106,28 @@
     }
 
     .easy-way-outcome > strong .wellbeing-icon { width: 25px; height: 25px; margin: 0; }
-    .easy-way-outcome small { color: var(--muted); font-size: .72rem; line-height: 1.42; }
+    .easy-way-outcome small { color: rgba(247,232,197,.68); font-size: .72rem; line-height: 1.42; }
 
+    /* With it: the walnut plaque, cut like Next turn. */
     .easy-way-outcome.is-plan {
-      border-color: rgba(24,60,51,.6);
+      border-color: #d9ad58;
       background:
-        radial-gradient(ellipse at 20% 0, rgba(255,236,190,.1), transparent 60%),
-        var(--felt-dark);
-      color: #fbf1d8;
+        radial-gradient(ellipse at 50% -20%, rgba(255,218,139,.26), transparent 56%),
+        repeating-linear-gradient(5deg, transparent 0 8px, rgba(255,214,132,.045) 9px 10px),
+        linear-gradient(180deg, #7d5330, #4a2d1c);
+      box-shadow:
+        inset 0 0 0 1.5px rgba(41,24,15,.58),
+        inset 0 0 0 3px rgba(229,180,89,.16),
+        0 4px 0 #26160f,
+        0 12px 22px rgba(0,0,0,.34);
+      color: #ffe7b0;
+      text-shadow: 0 1px 1px #29170e;
     }
 
-    .easy-way-outcome.is-plan > span { color: #cfe0cf; }
-    .easy-way-outcome.is-plan small { color: rgba(247,239,220,.8); }
+    #easyWayDialog[data-plan="fails"] .easy-way-outcome.is-plan { filter: saturate(.5) brightness(.8); }
+    .easy-way-outcome.is-plan > span { color: #f0cf83; }
+    .easy-way-outcome.is-plan > strong { color: #ffedc0; }
+    .easy-way-outcome.is-plan small { color: rgba(255,236,196,.8); }
 
     .easy-way-voters { display: flex; justify-content: space-between; gap: 6px; }
 
@@ -7979,6 +8138,7 @@
       flex: 1 1 0;
       justify-items: center;
       gap: 9px;
+      color: #f7e8c5;
       font-size: .7rem;
       font-weight: 780;
     }
@@ -7986,13 +8146,14 @@
     .easy-way-voter img {
       width: 44px;
       height: 44px;
-      border: 2px solid color-mix(in srgb, var(--person) 75%, #fffaf0);
+      border: 2px solid color-mix(in srgb, var(--person) 70%, #f3d9a0);
       border-radius: 50%;
       background: #fffaf0;
-      box-shadow: 0 2px 0 rgba(60,42,26,.2);
+      box-shadow: 0 0 0 2px #0a241e, 0 3px 8px rgba(0,0,0,.45);
       object-fit: cover;
     }
 
+    /* Yes in brass, no in oxblood, out in pewter. */
     .easy-way-voter b {
       position: absolute;
       top: 34px;
@@ -8000,24 +8161,25 @@
       min-width: 36px;
       padding: 2px 7px 3px;
       translate: -50% 0;
-      box-shadow: 0 0 0 2px #f3e3c3;
+      box-shadow: 0 0 0 2px #0a241e;
       border-radius: 999px;
-      background: #315c50;
-      color: #fff3d1;
+      background: linear-gradient(180deg, #f0cf83, #c9963f);
+      color: #3a2213;
       font-size: .6rem;
       letter-spacing: .1em;
       text-align: center;
       text-transform: uppercase;
     }
 
-    .easy-way-voter[data-vote="no"] b { background: #82453c; }
+    .easy-way-voter[data-vote="no"] b { background: linear-gradient(180deg, #b0574a, #82392f); color: #fff1e4; }
+    .easy-way-voter[data-vote="out"] { color: rgba(247,232,197,.6); }
     .easy-way-voter[data-vote="out"] img { filter: grayscale(1); opacity: .55; }
-    .easy-way-voter[data-vote="out"] b { background: #a39a88; }
+    .easy-way-voter[data-vote="out"] b { background: #77827a; color: #eef1e8; }
 
     .easy-way-argument > [hidden] { display: none; }
 
     /* The argument is a real chain, each step resting on the one before, so
-       it is numbered. */
+       it is numbered, each number on a brass stud. */
     .easy-way-steps {
       display: grid;
       margin: 0;
@@ -8030,7 +8192,7 @@
     .easy-way-steps li {
       position: relative;
       padding-left: 31px;
-      color: var(--muted);
+      color: rgba(247,232,197,.76);
       counter-increment: easy-way-step;
       font-size: .79rem;
       line-height: 1.48;
@@ -8043,32 +8205,32 @@
       width: 21px;
       height: 21px;
       border-radius: 50%;
-      background: linear-gradient(180deg, #79502f, #4c2e1d);
-      box-shadow: inset 0 0 0 1px rgba(255,225,160,.4), 0 1px 0 rgba(38,22,15,.35);
-      color: #ffe1a0;
+      background: radial-gradient(circle at 35% 30%, #f6d98f, #c9963f 60%, #8a5f24);
+      box-shadow: inset 0 0 0 1px rgba(255,240,200,.5), 0 1px 3px rgba(0,0,0,.45);
+      color: #4a2d14;
       content: counter(easy-way-step);
-      font: 600 .74rem/21px Georgia, "Times New Roman", serif;
+      font: 700 .74rem/21px Georgia, "Times New Roman", serif;
       text-align: center;
     }
 
-    .easy-way-steps strong, .easy-way-fails { color: var(--ink); }
+    .easy-way-steps strong, .easy-way-fails { color: #fbefd2; }
     .easy-way-fails { font-size: .8rem; line-height: 1.48; }
     .easy-way-steps .wellbeing-icon, .easy-way-lead .energy-icon { vertical-align: -.2em; }
 
     .easy-way-aside {
       padding-top: 10px;
-      border-top: 1px dashed rgba(111,74,40,.35);
-      color: var(--muted);
+      border-top: 1px dashed rgba(224,182,93,.32);
+      color: rgba(247,232,197,.72);
       font-size: .72rem;
       line-height: 1.5;
     }
-    .easy-way-aside strong { color: var(--ink); }
+    .easy-way-aside strong { color: #fbefd2; }
 
     .easy-way-body > .easy-way-footnote {
       margin-top: 14px;
       padding-top: 9px;
-      border-top: 1px dashed rgba(111,74,40,.32);
-      color: var(--muted);
+      border-top: 1px dashed rgba(224,182,93,.3);
+      color: rgba(247,232,197,.72);
       font-size: .68rem;
       line-height: 1.45;
     }
@@ -8082,14 +8244,14 @@
        foot with the tally beside the two outcomes. */
     @container easy-way (min-width: 600px) {
       .easy-way-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 22px; }
-      .easy-way-argument { padding-left: 22px; border-left: 1px dashed rgba(111,74,40,.32); }
+      .easy-way-argument { padding-left: 22px; border-left: 1px dashed rgba(224,182,93,.3); }
       .easy-way-result {
         grid-column: 1 / -1;
         grid-template-columns: minmax(0, 1.45fr) minmax(250px, 1fr);
         align-items: center;
         gap: 22px;
         padding-top: 14px;
-        border-top: 1px dashed rgba(111,74,40,.32);
+        border-top: 1px dashed rgba(224,182,93,.3);
       }
       .easy-way-result > .easy-way-kicker { grid-column: 1 / -1; margin-bottom: -12px; }
     }
@@ -8106,7 +8268,7 @@
         padding-top: 0;
         padding-left: 22px;
         border-top: 0;
-        border-left: 1px dashed rgba(111,74,40,.32);
+        border-left: 1px dashed rgba(224,182,93,.3);
       }
       .easy-way-result .easy-way-outcomes { grid-template-columns: minmax(0, 1fr); }
       .easy-way-result > .easy-way-kicker { margin-bottom: -9px; }
@@ -9404,6 +9566,7 @@
       <button class="icon-button" id="closeEasyWay" type="button" aria-label="Close the easy way">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
       </button>
+      <span class="easy-way-seal" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11V4h8v7"/><path d="m10 7.4 1.5 1.5L14.2 6"/><path d="M3.5 11h17v9h-17z"/><path d="M8 14h8"/></svg></span>
     </div>
     <div class="dialog-body easy-way-body" data-ui-key="t373">
       <!-- Read left to right: the proposal, why it wins, what it yields. The
@@ -9666,7 +9829,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.10.0-quit';
+    const APP_VERSION = '12.11.0-stages';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';

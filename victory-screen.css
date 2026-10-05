@@ -1,37 +1,53 @@
-.mission-win { box-sizing:border-box; width:min(600px,calc(100% - 28px)); max-height:calc(100dvh - 28px); overflow:auto; padding:7px; border:2px solid #bc9856; border-radius:25px 14px 25px 14px; color:#433322; background:#eedbb6; box-shadow:inset 0 0 0 3px #fff1cd,0 24px 90px #001a15aa; font-family:Georgia,serif; }
-.mission-win::backdrop { background:#031b16b8; backdrop-filter:blur(6px); }
-.mission-win header { position:relative; text-align:center; padding:22px 20px 24px; border:1px solid #b59a59; border-radius:16px 8px 0 0; color:#f9e8bd; background:radial-gradient(ellipse at top,#54704a77,transparent 65%),repeating-linear-gradient(-12deg,transparent 0 22px,#ebd29408 23px 24px),#123d31; }
-.mission-win .mission-seal { display:grid; place-items:center; margin:0 auto 13px; width:57px;height:57px;border-radius:50%;border:3px double #ffe1a0;background:radial-gradient(circle at 30% 20%,#f4d58b,#bc8740 55%,#705027);box-shadow:0 0 0 4px #d8bd6330,0 5px 16px #0005;color:#4b3218;font-size:30px; }
-.mission-win .mission-kicker { font:700 10px/1.5 "Noto Sans",system-ui,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#d0bd8c; }
-.mission-win h1 { font-size:clamp(25px,5vw,35px);font-weight:normal;margin:8px 0 4px;color:#fff1cd; }
-.mission-win .mission-subtitle { margin:0;font-size:20px;font-style:italic;color:#d5b975; }
-.mission-win .mission-body { padding:18px 20px 20px;background:repeating-linear-gradient(0deg,transparent 0 25px,#79542c06 26px); }
-.mission-win .mission-summary {text-align:center;font:13px/1.5 "Noto Sans",system-ui,sans-serif;margin:0 0 17px;color:#6c5b43;}
-.mission-win .mission-table-head {display:flex;justify-content:space-between;padding:0 11px 8px;font:700 9px "Noto Sans",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.14em;color:#84683c;}
-.mission-win ol {list-style:none;margin:0;padding:0;display:grid;gap:7px;}
-.mission-win li {display:grid;grid-template-columns:20px 43px 1fr auto;align-items:center;gap:10px;padding:9px 12px;border:1px solid #c9b38a;border-radius:9px 6px 10px 7px;background:#fff6e3aa;box-shadow:0 2px 2px #62441c0c;}
-.mission-win li:first-child {border-color:#b58b3e;background:linear-gradient(110deg,#f4dfaa,#fff5db);box-shadow:inset 0 0 0 2px #fff8e599;}
-.mission-win li[data-you] {border-left:3px solid #b6664e;}
-.mission-win .mission-rank {font-size:16px;color:#99753d;}
-.mission-win img {width:40px;height:40px;object-fit:cover;border-radius:50%;border:2px solid #c7a368;box-shadow:0 1px 3px #523b3040;}
-.mission-win .mission-name {font-weight:bold;font-size:16px;}
-.mission-win .mission-role {display:block;margin-top:3px;font:700 9px "Noto Sans",system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#8a7656;}
-.mission-win .mission-score {text-align:right;font-size:22px;color:#315c48;}
-.mission-win .mission-score small {display:block;margin-top:3px;font:10px "Noto Sans",system-ui,sans-serif;color:#847052;}
-.mission-win .mission-note {font:11px/1.5 "Noto Sans",system-ui,sans-serif;color:#847052;text-align:center;margin:14px 0 20px;}
-.mission-win .mission-actions {display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:20px;}
-.mission-win button {cursor:pointer;min-height:39px;padding:9px 22px;border:1px solid #98733e;border-radius:8px;background:linear-gradient(110deg,#d6aa56,#a77035);color:#fff4d5;font:bold 13px Georgia,serif;box-shadow:inset 0 1px #ffe2a3,0 2px #76532e;}
-.mission-win button.secondary {background:#234d3f;border-color:#48634c;}
-.mission-win button:hover {filter:brightness(1.12);}
-.mission-win button:focus-visible {outline:3px solid #b5883d;outline-offset:3px;}
-@media(max-width:440px){.mission-win .mission-body{padding:14px 10px 16px}.mission-win li{gap:7px;padding:8px}.mission-win .mission-score small{font-size:9px}.mission-win header{padding:16px 10px}.mission-win .mission-name{font-size:14px}}
+/* The win screen. It stands on the opening screens' stage: dark felt inside a
+   gilt edge and a second gilt line, a brass seal, the words in parchment. The
+   standings are paper slips laid on the felt, each tinted with its player's
+   own colour, the rank on a brass stud. The buttons are the briefing's felt
+   and walnut plaques. */
+.mission-win { box-sizing:border-box; width:min(620px,calc(100% - 28px)); max-height:calc(100dvh - 28px); overflow:auto; padding:7px; border:1px solid rgba(240,202,119,.55); border-radius:20px 15px 22px 17px; color:#f7e8c5; background:radial-gradient(ellipse 62% 40% at 50% -6%,rgba(255,214,132,.2),transparent 72%),repeating-linear-gradient(-4deg,transparent 0 17px,rgba(243,213,145,.022) 18px 19px),linear-gradient(152deg,#12362e 0%,#0a231d 60%,#071c17 100%); box-shadow:inset 0 0 0 6px #081f1a,inset 0 0 0 7px rgba(224,182,93,.3),inset 0 0 90px rgba(0,0,0,.4),0 26px 70px rgba(0,0,0,.66); font-family:Georgia,"Times New Roman",serif; scrollbar-color:#ad8147 rgba(4,21,17,.5); }
+.mission-win::backdrop { background:#031b16c4; backdrop-filter:blur(6px); }
+.mission-win header { position:relative; text-align:center; padding:22px 20px 17px; }
+/* A gilt rule under the heading, fading at both ends. */
+.mission-win header::after { position:absolute; right:22px; bottom:0; left:22px; height:2px; border-radius:2px; background:linear-gradient(90deg,transparent,rgba(224,182,93,.78) 22%,rgba(224,182,93,.78) 78%,transparent); content:""; }
+.mission-win .mission-seal { display:grid; place-items:center; margin:0 auto 12px; width:60px; height:60px; border:2px solid #e2b85e; border-radius:50%; background:radial-gradient(circle at 38% 27%,#ffe19b,#9c6630 52%,#422619 100%); box-shadow:inset 0 0 0 5px rgba(255,236,177,.17),0 0 0 6px rgba(224,182,93,.1),0 10px 26px rgba(0,0,0,.45); color:#3a2213; font-size:29px; text-shadow:0 1px 0 rgba(255,240,200,.34); }
+.mission-win .mission-kicker { display:flex; align-items:center; justify-content:center; gap:10px; font:800 10px/1.5 "Noto Sans",system-ui,sans-serif; letter-spacing:.2em; text-transform:uppercase; color:#e0b65d; }
+.mission-win .mission-kicker::before,
+.mission-win .mission-kicker::after { width:26px; height:1px; background:currentColor; opacity:.7; content:""; }
+.mission-win h1 { font-size:clamp(26px,5vw,36px); font-weight:normal; margin:7px 0 4px; color:#fbefd2; text-shadow:0 2px 14px rgba(0,0,0,.5); }
+.mission-win .mission-subtitle { margin:0; font-size:19px; font-style:italic; color:#e0b65d; }
+.mission-win .mission-body { padding:15px 20px 20px; }
+.mission-win .mission-summary { text-align:center; font:13px/1.5 "Noto Sans",system-ui,sans-serif; margin:0 0 15px; color:rgba(247,232,197,.78); }
+.mission-win .mission-table-head { display:flex; justify-content:space-between; padding:0 12px 8px; font:800 9px "Noto Sans",system-ui,sans-serif; text-transform:uppercase; letter-spacing:.16em; color:#e0b65d; }
+.mission-win ol { list-style:none; margin:0; padding:0; display:grid; gap:7px; }
+/* --person is the player's colour, set on each slip by victory-screen.js. */
+.mission-win li { --person:#b58b3e; display:grid; grid-template-columns:24px 43px 1fr auto; align-items:center; gap:10px; padding:8px 13px 8px 10px; border:1px solid color-mix(in srgb,var(--person) 42%,#cdb88e); border-radius:9px 6px 10px 7px; color:#433322; background:linear-gradient(100deg,color-mix(in srgb,var(--person) 17%,#fbf0d8),#fbf0d8 64%); box-shadow:0 3px 0 rgba(0,0,0,.28),0 9px 14px rgba(0,0,0,.2); }
+.mission-win li:first-child { border-color:#e2b85e; box-shadow:0 0 0 2px rgba(226,184,94,.42),0 3px 0 rgba(0,0,0,.28),0 9px 16px rgba(0,0,0,.24); }
+.mission-win li[data-you] { border-left:4px solid var(--person); }
+.mission-win .mission-rank { display:grid; place-items:center; width:24px; height:24px; border-radius:50%; background:radial-gradient(circle at 35% 30%,#f6d98f,#c9963f 60%,#8a5f24); box-shadow:inset 0 0 0 1px rgba(255,240,200,.5),0 1px 2px rgba(0,0,0,.35); color:#4a2d14; font-size:13px; font-weight:bold; line-height:1; }
+.mission-win img { width:40px; height:40px; object-fit:cover; border-radius:50%; border:2px solid color-mix(in srgb,var(--person) 70%,#f3d9a0); box-shadow:0 1px 3px #523b3040; }
+.mission-win .mission-name { font-weight:bold; font-size:16px; }
+.mission-win .mission-role { display:block; margin-top:3px; font:700 9px "Noto Sans",system-ui,sans-serif; letter-spacing:.1em; text-transform:uppercase; color:color-mix(in srgb,var(--person) 62%,#5d4a33); }
+.mission-win .mission-score { text-align:right; font-size:22px; color:#28523f; font-variant-numeric:tabular-nums; }
+.mission-win .mission-score small { display:block; margin-top:3px; font:10px "Noto Sans",system-ui,sans-serif; color:#847052; }
+.mission-win .mission-note { font:11px/1.5 "Noto Sans",system-ui,sans-serif; color:rgba(247,232,197,.7); text-align:center; margin:14px 0 20px; }
+.mission-win .mission-actions { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:20px; }
+/* Play again: the briefing's walnut Start plaque. Return to table: its felt one. */
+.mission-win button { cursor:pointer; min-height:42px; padding:9px 22px; border:1px solid rgba(235,196,111,.55); border-radius:9px; background:linear-gradient(180deg,#a87335,#65411f); color:#f7e8c5; font:800 13px "Noto Sans",system-ui,sans-serif; letter-spacing:.02em; box-shadow:inset 0 1px 0 rgba(255,232,175,.2),0 4px 0 #2b190e; transition:filter .16s ease,translate .16s ease; }
+.mission-win button.secondary { background:linear-gradient(180deg,rgba(24,62,52,.92),rgba(11,36,29,.92)); box-shadow:inset 0 1px 0 rgba(255,235,180,.12),0 4px 0 rgba(0,0,0,.42); }
+.mission-win button:hover { filter:brightness(1.14); translate:0 -1px; }
+.mission-win button:active { translate:0 2px; }
+.mission-win button:focus-visible { outline:2px solid #f3c869; outline-offset:3px; }
+@media(max-width:440px){.mission-win .mission-body{padding:14px 10px 16px}.mission-win li{gap:7px;padding:8px}.mission-win .mission-score small{font-size:9px}.mission-win header{padding:18px 10px 14px}.mission-win .mission-name{font-size:14px}}
 
-/* Short landscape screens: keep every standing and both actions in view. */
+/* Short landscape screens: keep every standing and both actions in view. The
+   heading moves to the left and the two buttons sit beside it. */
 @media (orientation:landscape) and (max-height:600px) {
   .mission-win {width:min(800px,calc(100% - 24px));max-height:calc(100dvh - 16px);padding:5px;}
   .mission-win header {text-align:left;padding:12px 260px 12px 18px;min-height:58px;box-sizing:content-box;}
+  .mission-win header::after {right:16px;left:16px;background:linear-gradient(90deg,rgba(224,182,93,.8),rgba(224,182,93,.3) 44%,transparent 90%);}
   .mission-win .mission-seal {display:none;}
-  .mission-win .mission-kicker {font-size:9px;letter-spacing:.13em;}
+  .mission-win .mission-kicker {justify-content:flex-start;font-size:9px;letter-spacing:.13em;}
+  .mission-win .mission-kicker::before {width:18px;}
+  .mission-win .mission-kicker::after {content:none;}
   .mission-win h1 {font-size:26px;margin:3px 0 2px;white-space:nowrap;}
   .mission-win .mission-subtitle {font-size:16px;}
   .mission-win .mission-actions {position:absolute;top:28px;right:24px;gap:9px;flex-wrap:nowrap;margin-top:0;}
@@ -40,7 +56,9 @@
   .mission-win .mission-summary {display:none;}
   .mission-win .mission-table-head {padding:0 10px 6px;font-size:9px;}
   .mission-win ol {gap:4px;}
-  .mission-win li {grid-template-columns:20px 30px 1fr auto;gap:9px;padding:4px 10px;}
+  .mission-win li {grid-template-columns:20px 30px 1fr auto;gap:9px;padding:4px 10px;box-shadow:0 2px 0 rgba(0,0,0,.28);}
+  .mission-win li:first-child {box-shadow:0 0 0 2px rgba(226,184,94,.42),0 2px 0 rgba(0,0,0,.28);}
+  .mission-win .mission-rank {width:20px;height:20px;font-size:12px;}
   .mission-win img {box-sizing:border-box;width:30px;height:30px;}
   .mission-win .mission-name {font-size:15px;}
   .mission-win .mission-role {display:inline;margin-left:10px;font-size:9px;}

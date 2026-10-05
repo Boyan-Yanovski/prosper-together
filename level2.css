@@ -28,7 +28,8 @@ html[data-level="2"] .common-good {--good-size:52px !important;}
 html[data-level="2"] .mission-win {width:min(800px,calc(100% - 24px));}
 @media (orientation:landscape) and (max-height:600px) {
   html[data-level="2"] .mission-win ol {grid-template-columns:1fr 1fr;}
-  html[data-level="2"] .mission-win li {grid-template-columns:16px 28px 1fr auto;gap:5px;}
+  html[data-level="2"] .mission-win li {grid-template-columns:18px 28px 1fr auto;gap:5px;}
+  html[data-level="2"] .mission-win .mission-rank {width:18px;height:18px;font-size:11px;}
   html[data-level="2"] .mission-win .mission-role {display:block;margin:0;font-size:8px;}
   html[data-level="2"] .mission-win .mission-score {display:block;font-size:17px;}
   html[data-level="2"] .mission-win .mission-score small {font-size:8px;}
