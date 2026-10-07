@@ -3677,7 +3677,10 @@
        face at the top of it and the gauge beneath. The card needs no more room
        for that — the header gives up exactly the column the reserve takes. */
     .seat-you {
-      --vitals-width: clamp(36px, 4.7vw, 58px);
+      /* The Artist's face is the size of everyone else's (58px, before the
+         card's own scale). It used to narrow with the window, so on a phone
+         it was a quarter smaller than its neighbours' and its gauge thinner. */
+      --vitals-width: 58px;
       /* The reserve sits a touch further into the card than the gap beside it
          first allowed, and the card gives back exactly that much of its left
          edge — the shift comes out of the gap, so nothing to the right moves. */
@@ -5191,11 +5194,13 @@
         --gauge-tuck: 10px;
         --gauge-lip: 4px;
         --gauge-full: calc(var(--gauge-tuck) - var(--gauge-lip));
-        /* Exactly the width of the Artist's vertical tube. Both cards inherit
-           the same whole-card scale, so the physical thickness stays equal. */
+        /* Exactly the width of the Artist's vertical tube: 44% of a 58px
+           face. Both cards inherit the same whole-card scale, so the physical
+           thickness stays equal, and the two lines written in the tube fit
+           at every window size (it used to thin with the window). */
         width: auto;
         min-width: 48px;
-        height: max(12px, calc(clamp(36px, 4.7vw, 58px) * .44));
+        height: calc(58px * .44);
         min-height: 0;
         flex: 1 1 auto;
         margin: 0 0 0 calc(-1 * var(--gauge-tuck));
@@ -9829,7 +9834,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.11.0-stages';
+    const APP_VERSION = '12.11.1-vitals';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
