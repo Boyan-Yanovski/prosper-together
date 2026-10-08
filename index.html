@@ -5522,6 +5522,12 @@
         color: var(--op-parch);
         font-size: clamp(.79rem, 2.05svh, 1rem);
       }
+      /* The paragraphs of the home screen's words are blocks inside the one
+         <p>, a line apart. Where the words run in two columns each paragraph
+         stays whole, so none leaves its last word at the head of the next
+         column, and the second starts level with the first. */
+      .exposition-part { display: block; break-inside: avoid; }
+      .exposition-part + .exposition-part { margin-top: 1.5em; margin-top: 1lh; }
       /* the button is the panel: it fills the column and carries its own caption */
       .opening-guide-button {
         display: grid;
@@ -9071,7 +9077,7 @@
 
       <div class="opening-home" data-ui-key="t285">
         <div class="opening-exposition" id="openingExposition">
-          <p data-ui-key="t3">Free markets are often considered the best solution for resource allocation and utilization. They are also often seen as the natural state of things or simply as the lack of regulation or state involvement apart from enforcing individual property rights. This game series aims to illustrate that free markets cannot be universally recommended, because what decentralized decisions lead<br>to depends entirely on the underlying economic environment.<br><br>This game, in particular, aims to capture one core aspect of economic reality: Individuals possess unique qualities that make specialization beneficial to the whole. But specialization is risky: whoever specializes depends on the whole to provide necessities. The game can be considered an adaptation of the Jean-Jacques Rousseau's (1712-1778) "Stag hunt" game theoretical setup.</p>
+          <p data-ui-key="t3"><span class="exposition-part" data-ui-key="t477">Free markets are often considered the best solution for resource allocation and utilization. They are also often seen as the natural state of things or simply as the lack of regulation or state involvement apart from enforcing individual property rights. This game series aims to illustrate that free markets cannot be universally recommended, because what decentralized decisions lead to depends entirely on the underlying economic environment.</span><span class="exposition-part" data-ui-key="t478">This game, in particular, aims to capture one core aspect of economic reality: Individuals possess unique qualities that make specialization beneficial to the whole. But specialization is risky: whoever specializes depends on the whole to provide necessities. The game can be considered an adaptation of the Jean-Jacques Rousseau's (1712-1778) "Stag hunt" game theoretical setup.</span></p>
           <p data-ui-key="t4" data-ui-removed="own-aria" aria-hidden="true">The other four are not scripted. Each carries its own appetite for risk and its own trust &mdash; in the market, and in you &mdash; and each reprices participation every turn. The only argument you can make to them is a pledge: goods from your own production, promised in exchange for the energy they invest.</p>
           <p data-ui-key="t5" data-ui-removed="own-aria" aria-hidden="true">Two outcomes hold once reached: everybody stays home, or everybody commits. The second is worth far more to all five. Nothing in the rules pushes the table towards it.</p>
         </div>
@@ -9834,7 +9840,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.11.2-home-text';
+    const APP_VERSION = '12.11.3-home-columns';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
