@@ -2253,7 +2253,8 @@
        standing) as paper laid on the felt. Buttons are the briefing's walnut
        and felt plaques; a close button is a brass stud from the toolbar. */
     #defeatDialog,
-    #easyWayDialog {
+    #easyWayDialog,
+    #paperDialog {
       border: 1px solid rgba(240,202,119,.55);
       border-radius: 20px 15px 22px 17px;
       /* The second gilt line, drawn as shadow so it stays put when the
@@ -2267,14 +2268,18 @@
       scrollbar-color: #ad8147 rgba(4,21,17,.5);
     }
     #defeatDialog::backdrop,
-    #easyWayDialog::backdrop { background: #031b16c4; backdrop-filter: blur(6px); }
+    #easyWayDialog::backdrop,
+    #paperDialog::backdrop { background: #031b16c4; backdrop-filter: blur(6px); }
     #defeatDialog .dialog-head,
-    #easyWayDialog .dialog-head { align-items: center; border-bottom: 0; }
+    #easyWayDialog .dialog-head,
+    #paperDialog .dialog-head { align-items: center; border-bottom: 0; }
     #defeatDialog .dialog-head::before,
-    #easyWayDialog .dialog-head::before { display: none; }
+    #easyWayDialog .dialog-head::before,
+    #paperDialog .dialog-head::before { display: none; }
     /* A gilt rule under the heading, as under the home screen's. */
     #defeatDialog .dialog-head::after,
-    #easyWayDialog .dialog-head::after {
+    #easyWayDialog .dialog-head::after,
+    #paperDialog .dialog-head::after {
       position: absolute;
       right: 26px;
       bottom: 0;
@@ -2285,11 +2290,14 @@
       content: "";
     }
     #defeatDialog .dialog-head h2,
-    #easyWayDialog .dialog-head h2 { color: #fbefd2; text-shadow: 0 2px 14px rgba(0,0,0,.5); }
+    #easyWayDialog .dialog-head h2,
+    #paperDialog .dialog-head h2 { color: #fbefd2; text-shadow: 0 2px 14px rgba(0,0,0,.5); }
     #defeatDialog .dialog-head p,
-    #easyWayDialog .dialog-head p { color: rgba(247,232,197,.76); }
+    #easyWayDialog .dialog-head p,
+    #paperDialog .dialog-head p { color: rgba(247,232,197,.76); }
     #defeatDialog .icon-button,
-    #easyWayDialog .icon-button {
+    #easyWayDialog .icon-button,
+    #paperDialog .icon-button {
       flex: 0 0 34px;
       align-self: flex-start;
       width: 34px;
@@ -2311,13 +2319,17 @@
       transition: translate .16s var(--ease), filter .16s ease;
     }
     #defeatDialog .icon-button svg,
-    #easyWayDialog .icon-button svg { width: 15px; height: 15px; }
+    #easyWayDialog .icon-button svg,
+    #paperDialog .icon-button svg { width: 15px; height: 15px; }
     #defeatDialog .icon-button:hover,
-    #easyWayDialog .icon-button:hover { background-color: transparent; filter: brightness(1.13) saturate(1.05); translate: 0 -1px; transform: none; }
+    #easyWayDialog .icon-button:hover,
+    #paperDialog .icon-button:hover { background-color: transparent; filter: brightness(1.13) saturate(1.05); translate: 0 -1px; transform: none; }
     #defeatDialog .icon-button:active,
-    #easyWayDialog .icon-button:active { translate: 0 2px; }
+    #easyWayDialog .icon-button:active,
+    #paperDialog .icon-button:active { translate: 0 2px; }
     #defeatDialog .icon-button:focus-visible,
-    #easyWayDialog .icon-button:focus-visible { outline: 2px solid #f3c869; outline-offset: 3px; }
+    #easyWayDialog .icon-button:focus-visible,
+    #paperDialog .icon-button:focus-visible { outline: 2px solid #f3c869; outline-offset: 3px; }
 
     /* Game over: the stage under a redder light, the player's worn face in a
        brass ring, and the count of the last turns as a ledger. */
@@ -8727,6 +8739,119 @@
     .game-menu-item[data-confirming] { background-color: rgba(176,58,40,.3); }
     .game-menu-item[data-confirming] svg { background: radial-gradient(circle at 35% 30%, #f6b39d, #c4513a 60%, #7d2a1c); color: #fff1e4; }
     .game-menu-item[data-confirming] .game-menu-confirm { display: block; }
+    a.game-menu-item { text-decoration: none; }
+    /* Six entries one below the other are too tall for a phone held
+       sideways, which is wide and short. There the table's menu is two
+       columns of three: what the game itself offers, and beside it the
+       reading and the way out. */
+    @media (orientation: landscape) and (max-height: 480px) {
+      #gameMenu {
+        width: min(456px, calc(100vw - 20px));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(3, auto);
+        grid-auto-flow: column;
+        column-gap: 6px;
+      }
+      #gameMenu .game-menu-item:nth-child(4)::before { display: none; }
+    }
+
+    /* The companion paper, read inside the game (Menu > Companion paper):
+       the felt stage again, as tall as the screen allows, with the paper's
+       pages as sheets laid on it one below the other. The heading stays in
+       place and the sheets scroll under it. */
+    #paperDialog {
+      width: min(1040px, calc(100% - 24px));
+      width: min(1040px, calc(100% - 24px - 2 * max(env(safe-area-inset-left), env(safe-area-inset-right))));
+      height: calc(100vh - 24px);
+      height: calc(100svh - 24px);
+      max-height: none;
+      overflow: hidden;
+      flex-direction: column;
+      background:
+        radial-gradient(ellipse 62% 46% at 11% -6%, rgba(255,214,132,.17), transparent 72%),
+        repeating-linear-gradient(-4deg, transparent 0 17px, rgba(243,213,145,.022) 18px 19px),
+        linear-gradient(152deg, #12362e 0%, #0a231d 60%, #071c17 100%);
+    }
+    #paperDialog[open] { display: flex; }
+    #paperDialog .dialog-head { flex: none; padding: 17px 22px 13px; gap: 14px; }
+    #paperDialog .dialog-head::after { right: 22px; left: 22px; }
+    #paperDialog .dialog-head > div { flex: 1; min-width: 0; }
+    #paperDialog .dialog-head h2 { font-size: 1.4rem; letter-spacing: .01em; }
+    #paperDialog .dialog-head p { font-size: .8rem; line-height: 1.35; }
+    #paperDialog .icon-button { align-self: center; }
+    .paper-progress {
+      flex: none;
+      color: rgba(247,232,197,.82);
+      font-size: .78rem;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .03em;
+      white-space: nowrap;
+    }
+    /* The PDF itself, one tap away: a brass tab like the toolbar's. */
+    .paper-file {
+      display: inline-flex;
+      flex: none;
+      min-height: 34px;
+      padding: 0 14px;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid #ddb866;
+      border-radius: 17px;
+      background: linear-gradient(145deg, #bd8b45, #71451f);
+      box-shadow: inset 0 0 0 2px rgba(69,38,19,.48), 0 2px 0 #26160e, 0 5px 10px rgba(0,0,0,.3);
+      color: #fff0bf;
+      font-size: .76rem;
+      font-weight: 760;
+      letter-spacing: .03em;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: translate .16s var(--ease), filter .16s ease;
+    }
+    .paper-file svg { width: 14px; height: 14px; }
+    .paper-file:hover { filter: brightness(1.13) saturate(1.05); translate: 0 -1px; }
+    .paper-file:active { translate: 0 2px; }
+    .paper-file:focus-visible { outline: 2px solid #f3c869; outline-offset: 3px; }
+    .paper-pages {
+      display: grid;
+      flex: 1;
+      min-height: 0;
+      /* Clear of the stage's inner gilt line at the sides and the foot. */
+      margin: 0 8px 9px;
+      padding: 16px clamp(6px, 1.8vw, 22px) 22px;
+      justify-items: center;
+      align-content: start;
+      gap: 16px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-color: #ad8147 rgba(4,21,17,.5);
+    }
+    .paper-pages:focus-visible { outline: 2px solid #f3c869; outline-offset: -6px; }
+    .paper-page {
+      display: block;
+      width: min(100%, 940px);
+      height: auto;
+      border-radius: 3px;
+      background: #fff;
+      box-shadow: 0 2px 0 rgba(0,0,0,.4), 0 14px 28px rgba(0,0,0,.42);
+    }
+    @media (max-width: 620px) {
+      #paperDialog .dialog-head p,
+      .paper-file-long { display: none; }
+    }
+    @media (orientation: landscape) and (max-height: 480px) {
+      #paperDialog {
+        width: calc(100% - 12px);
+        width: calc(100% - 12px - 2 * max(env(safe-area-inset-left), env(safe-area-inset-right)));
+        max-width: none;
+        height: calc(100vh - 12px);
+        height: calc(100svh - 12px);
+      }
+      #paperDialog .dialog-head { padding: 9px 16px 8px; }
+      #paperDialog .dialog-head::after { right: 16px; left: 16px; }
+      #paperDialog .dialog-head h2 { font-size: 1.14rem; }
+      #paperDialog .dialog-head p { display: none; }
+      .paper-pages { padding-top: 10px; gap: 10px; }
+    }
 
     /* The way out on the screens without a toolbar, in their top right
        corner. They scroll away with the screen where it scrolls. */
@@ -9060,6 +9185,14 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>
       </button>
       <div class="game-menu" id="openingMenu" role="menu" aria-label="Menu" hidden>
+        <button class="game-menu-item" id="openingMenuPaper" type="button" role="menuitem" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h6.5L18 8v12.5H7z"/><path d="M13.5 3.5V8H18"/><path d="M10 12.5h5M10 16h5"/></svg>
+          <span class="game-menu-text" data-ui-key="t479"><span class="game-menu-label" data-ui-key="t480">Companion paper</span></span>
+        </button>
+        <a class="game-menu-item" id="openingMenuSubstack" role="menuitem" href="https://experientialeconomics.substack.com/" target="_blank" rel="noopener" title="Experiential Economics on Substack (opens in a new tab)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 5h12M6 8.8h12"/><path d="M6 12.6h12V20l-6-3.5L6 20z"/></svg>
+          <span class="game-menu-text" data-ui-key="t481"><span class="game-menu-label" data-ui-key="t482">Substack page</span></span>
+        </a>
         <button class="game-menu-item" id="openingMenuQuit" type="button" role="menuitem">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8v7.7"/><path d="M7.4 6.9a7.3 7.3 0 1 0 9.2 0"/></svg>
           <span class="game-menu-text" data-ui-key="t468"><span class="game-menu-label" data-ui-key="t469">Quit game</span><span class="game-menu-confirm" data-ui-key="t470">Tap again to quit. The turns you played are lost.</span></span>
@@ -9483,6 +9616,14 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5"/><path d="M6.5 10v9h11v-9"/><path d="M10 19v-5h4v5"/></svg>
               <span class="game-menu-text" data-ui-key="t460"><span class="game-menu-label" data-ui-key="t461">Home screen</span><span class="game-menu-confirm" data-ui-key="t462">Tap again to leave. The turns you played are lost.</span></span>
             </button>
+            <button class="game-menu-item" id="menuPaper" type="button" role="menuitem" aria-haspopup="dialog">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h6.5L18 8v12.5H7z"/><path d="M13.5 3.5V8H18"/><path d="M10 12.5h5M10 16h5"/></svg>
+              <span class="game-menu-text" data-ui-key="t483"><span class="game-menu-label" data-ui-key="t484">Companion paper</span></span>
+            </button>
+            <a class="game-menu-item" id="menuSubstack" role="menuitem" href="https://experientialeconomics.substack.com/" target="_blank" rel="noopener" title="Experiential Economics on Substack (opens in a new tab)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 5h12M6 8.8h12"/><path d="M6 12.6h12V20l-6-3.5L6 20z"/></svg>
+              <span class="game-menu-text" data-ui-key="t485"><span class="game-menu-label" data-ui-key="t486">Substack page</span></span>
+            </a>
             <button class="game-menu-item" id="menuQuit" type="button" role="menuitem">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8v7.7"/><path d="M7.4 6.9a7.3 7.3 0 1 0 9.2 0"/></svg>
               <span class="game-menu-text" data-ui-key="t474"><span class="game-menu-label" data-ui-key="t475">Quit game</span><span class="game-menu-confirm" data-ui-key="t476">Tap again to quit. The turns you played are lost.</span></span>
@@ -9570,6 +9711,23 @@
     </main>
   </div>
 
+
+  <!-- The companion paper, read inside the game. Its pages are pictures
+       (make-paper-pages.py), put in when the window first opens. -->
+  <dialog id="paperDialog" aria-labelledby="paperTitle">
+    <div class="dialog-head" data-ui-key="t487">
+      <div data-ui-key="t488"><h2 id="paperTitle">Companion paper</h2><p data-ui-key="t489">The model behind the game</p></div>
+      <span class="paper-progress" id="paperProgress"></span>
+      <a class="paper-file" id="paperFile" href="prosper-together-paper.pdf" target="_blank" rel="noopener" title="Open the paper as a PDF (in a new tab)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7.5 11 4.5 4.5 4.5-4.5"/><path d="M5 19.5h14"/></svg>
+        <span data-ui-key="t490"><span class="paper-file-long" data-ui-key="t491">Open as </span>PDF</span>
+      </a>
+      <button class="icon-button" id="closePaper" type="button" aria-label="Close the paper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="paper-pages" id="paperPages" tabindex="0" aria-label="The paper's pages"></div>
+  </dialog>
 
   <dialog class="dialog-wide" id="easyWayDialog" aria-labelledby="easyWayTitle">
     <div class="dialog-head" data-ui-key="t371">
@@ -9817,6 +9975,7 @@
     </div>
   </dialog>
 
+  <script src="paper-pages.js"></script>
   <script src="level-config.js"></script>
   <script src="game-parameters.js"></script>
   <script src="simple-agents.js"></script>
@@ -9840,7 +9999,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.11.3-home-columns';
+    const APP_VERSION = '12.12.0-paper';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
@@ -15246,8 +15405,92 @@
       if (confirmedInMenu(event.currentTarget)) quitGame();
     });
 
+    /* The companion paper, read inside the game. A phone's browser, and the
+       game once installed, cannot show a PDF inside a page, so the paper's
+       pages are pictures (made by make-paper-pages.py, counted in
+       paper-pages.js), one below the other in a window of their own. They
+       are put in when the window first opens and each loads as it is
+       scrolled to. Closing the window leaves the game as it was, and opening
+       it again returns to the page last read. The PDF is one tap away. */
+    const PAPER_PAGES = window.CWT_PAPER_PAGES || { count: 0, width: 1, height: 1 };
+    let paperLeftAt = 0;   // how far down the paper was when its window last closed
+    function showPaperProgress() {
+      const sheets = $('#paperPages'), middle = sheets.scrollTop + sheets.clientHeight / 2;
+      let reading = 1;
+      for (const sheet of sheets.children) {
+        if (sheet.offsetTop <= middle) reading = Number(sheet.dataset.page);
+      }
+      // The end of the paper counts as its last page, however tall the window.
+      if (sheets.scrollTop + sheets.clientHeight >= sheets.scrollHeight - 2) reading = PAPER_PAGES.count;
+      $('#paperProgress').textContent = PAPER_PAGES.count ? `Page ${reading} of ${PAPER_PAGES.count}` : '';
+    }
+    function openPaper() {
+      const dialog = $('#paperDialog'), sheets = $('#paperPages');
+      setGameMenuOpen(false);
+      setOpeningMenuOpen(false);
+      if (!sheets.children.length) {
+        for (let index = 1; index <= PAPER_PAGES.count; index += 1) {
+          const page = `page-${String(index).padStart(2, '0')}`;
+          const sheet = document.createElement('img');
+          sheet.className = 'paper-page';
+          sheet.alt = `Page ${index} of the companion paper`;
+          sheet.width = PAPER_PAGES.width;
+          sheet.height = PAPER_PAGES.height;
+          sheet.loading = 'lazy';
+          sheet.decoding = 'async';
+          sheet.dataset.page = index;
+          sheet.src = `assets/paper/${page}.webp`;
+          sheets.append(sheet);
+        }
+      }
+      if (dialog.open) return;
+      AUDIO.cue('dialog-open');
+      dialog.showModal();
+      sheets.scrollTop = paperLeftAt;
+      showPaperProgress();
+      sheets.focus({ preventScroll: true });
+    }
+    // Back to the menu button of the screen in front: the table's, or the corner's on the other screens.
+    function focusAfterPaper() {
+      $(document.body.dataset.view === 'game' ? '#menuButton' : '#openingMenuButton').focus({ preventScroll: true });
+    }
+    function closePaper() {
+      // A closed window forgets how far it was scrolled; the game remembers.
+      paperLeftAt = $('#paperPages').scrollTop;
+      $('#paperDialog').close();
+      focusAfterPaper();
+    }
+    {
+      let progressDue = false;
+      $('#paperPages').addEventListener('scroll', () => {
+        if (progressDue) return;
+        progressDue = true;
+        requestAnimationFrame(() => { progressDue = false; showPaperProgress(); });
+      }, { passive: true });
+    }
+    $('#menuPaper').addEventListener('click', openPaper);
+    $('#openingMenuPaper').addEventListener('click', openPaper);
+    $('#closePaper').addEventListener('click', closePaper);
+    $('#paperDialog').addEventListener('click', event => {
+      if (event.target === $('#paperDialog')) closePaper();
+    });
+    // Escape closes the paper alone: not also the guide it may lie over.
+    $('#paperDialog').addEventListener('keydown', event => {
+      if (event.key === 'Escape') event.stopPropagation();
+    });
+    $('#paperDialog').addEventListener('cancel', () => { paperLeftAt = $('#paperPages').scrollTop; });
+    // However it closed (the button, a tap outside, Escape); the browser says so a moment later.
+    $('#paperDialog').addEventListener('close', () => {
+      AUDIO.cue('dialog-close');
+      focusAfterPaper();
+    });
+    // The way to the Substack page leaves the game in its own tab; the menu closes behind it.
+    $('#menuSubstack').addEventListener('click', () => setGameMenuOpen(false));
+    $('#openingMenuSubstack').addEventListener('click', () => setOpeningMenuOpen(false));
+
     /* The same menu button on the home screen, the guide and the briefings,
-       where it holds only the way out; the first page has a button for it. */
+       where it holds the reading (the paper, the Substack page) and the way
+       out; the first page has a button for the way out. */
     function setOpeningMenuOpen(open) {
       $('#openingMenu').hidden = !open;
       $('#openingMenuButton').setAttribute('aria-expanded', String(open));
@@ -15257,7 +15500,7 @@
       const open = $('#openingMenu').hidden;
       AUDIO.cue(open ? 'dialog-open' : 'dialog-close');
       setOpeningMenuOpen(open);
-      if (open) $('#openingMenuQuit').focus({ preventScroll: true });
+      if (open) $('#openingMenuPaper').focus({ preventScroll: true });
     });
     $('#openingMenuQuit').addEventListener('click', event => {
       if (confirmedInMenu(event.currentTarget)) quitGame();
