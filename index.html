@@ -37,8 +37,9 @@
       let handheld = matchMedia('(pointer: coarse)').matches;
       let fullscreen = Boolean(document.fullscreenEnabled || document.webkitFullscreenEnabled);
       // Opened from its home-screen icon: already as full a screen as the
-      // system gives, so the game never asks for full screen (and Chrome's
-      // notice about it never appears).
+      // system gives, so the game does not ask for full screen (and Chrome's
+      // notice about it never appears), unless Chrome keeps its window out
+      // of the camera's strip (noteCameraStrip, in the game's script).
       let installed = matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches
         || navigator.standalone === true;
       /* ?phone (the Phone Preview shortcut) shows the game on a computer as an
@@ -10238,7 +10239,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.15.0-onesize';
+    const APP_VERSION = '12.15.1-strip';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
@@ -10933,7 +10934,29 @@
         && (window.top === window || IN_LEVEL_FRAME || IN_PAGE_FRAME);
     }
 
+    /* An installed game opens in full screen without asking, and so is spared
+       Chrome's notice about leaving it. But Chrome keeps the window of an
+       installed game out of the strip the phone's camera stands in, and
+       leaves that strip black: only a page that has itself asked for full
+       screen may draw there, as the game in the browser does. So an
+       installed game on Android that finds its window short of the screen
+       asks after all, from then on exactly as in the browser: on Play, from
+       the full-screen buttons, and on coming back. An installed game whose
+       window is the whole screen (a phone without such a strip, a tablet)
+       still asks for nothing. */
+    function noteCameraStrip() {
+      const marks = document.documentElement.dataset;
+      if ('fullscreenAble' in marks || !('installed' in marks) || marks.device !== 'android') return;
+      if (TEST_PARAMS.has('author') || PHONE_PREVIEW || inFullscreen()) return;
+      const host = fullscreenHost();
+      if (!(host.document.fullscreenEnabled || host.document.webkitFullscreenEnabled)) return;
+      const reach = Math.max(host.innerWidth, host.innerHeight);
+      const screenLong = Math.max(host.screen.width, host.screen.height);
+      if (reach > 0 && screenLong - reach > 12) marks.fullscreenAble = '';
+    }
+
     function goFullscreenSideways() {
+      noteCameraStrip();
       if (!mayGoFullscreen() || inFullscreen()) return;
       if (PHONE_PREVIEW) {
         try { sessionStorage.setItem(PRETEND_FULLSCREEN_KEY, '1'); } catch {}
@@ -10958,6 +10981,7 @@
     }
 
     function noteFullscreen() {
+      noteCameraStrip();
       document.documentElement.toggleAttribute('data-fullscreen', inFullscreen());
       keepScreenOn();
     }
