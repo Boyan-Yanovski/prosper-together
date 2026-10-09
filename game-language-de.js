@@ -382,7 +382,7 @@
     /* A player's card */
     'Learning rate': 'Lernrate',
     '{}: learning rate {} percent; bar scaled relative to the highest configured rate': '{0}: Lernrate {1} Prozent; Balken relativ zur höchsten eingestellten Rate',
-    'Expecting contributions from:': 'Erwartet Beiträge von:',
+    'Expects:': 'Erwartet:',
     '{} expects a {} percent chance that {} contributes at least 1 energy. Show probabilities.': (observer, chance, peer) => (peer === 'Du'
       ? `${observer} erwartet mit ${chance} Prozent Wahrscheinlichkeit, dass du mindestens 1 Energie beiträgst. Wahrscheinlichkeiten anzeigen.`
       : `${observer} erwartet mit ${chance} Prozent Wahrscheinlichkeit, dass ${peer} mindestens 1 Energie beiträgt. Wahrscheinlichkeiten anzeigen.`),

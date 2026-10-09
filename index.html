@@ -9189,8 +9189,9 @@
     .seat:not(.seat-you) { min-width:232px; }
     .seat:not(.seat-you) .seat-head { grid-template-columns:138px minmax(0,1fr); }
     .seat:not(.seat-you) .automaton-vitals .survival-health { width:90px; min-width:90px; flex:0 0 90px; }
-    .expected-contributions { display:flex; align-items:center; gap:3px; }
-    .expected-contributions-label { font-size:7px; text-transform:uppercase; font-weight:700; line-height:1.15; max-width:90px; }
+    .expected-contributions { display:flex; align-items:center; gap:5px; }
+    /* Set as "Learning rate" is, on the line above it (.risk-aversion-label). */
+    .expected-contributions-label { flex:0 0 auto; font-size:.49rem; font-weight:850; letter-spacing:.035em; text-transform:uppercase; white-space:nowrap; }
     .expected-peer { position:relative; flex:0 0 18px; width:18px; height:18px; padding:0; border:0; background:transparent; box-shadow:none; cursor:pointer; border-radius:50%; }
     .expected-peer img { display:block; width:100%; height:100%; object-fit:cover; border-radius:50%; }
     .expected-peer .expected-peer-gray { filter:grayscale(1); opacity:1; }
@@ -10083,7 +10084,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.13.2-german';
+    const APP_VERSION = '12.14.0-awake';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
@@ -10755,6 +10756,44 @@
 
     function noteFullscreen() {
       document.documentElement.toggleAttribute('data-fullscreen', inFullscreen());
+      keepScreenOn();
+    }
+
+    /* The screen stays on while the game is in full screen. A player thinking
+       a turn over touches nothing for longer than a phone waits before it
+       dims and locks, and a locked phone ends full screen as well. An
+       installed game is in full screen for as long as it is open. The browser
+       lets go of the screen whenever the page is hidden, so it is asked again
+       each time full screen is noted (noteFullscreen: on entering it, and on
+       coming back to the page). Where the browser has no such request (a
+       plain-http address), or refuses it (a battery saver), the phone keeps
+       its own timing. A level in a frame leaves this to the page around it;
+       the editor's preview and the phone preview on a computer ask nothing. */
+    let screenHeld = null;     // the browser's hold on the screen, while it has one
+    let screenAsked = false;   // a request is on its way
+
+    function screenShouldStayOn() {
+      if (document.hidden || window.top !== window || TEST_PARAMS.has('author') || PHONE_PREVIEW) return false;
+      return inFullscreen() || 'installed' in document.documentElement.dataset;
+    }
+
+    async function keepScreenOn() {
+      if (!screenShouldStayOn()) {
+        const held = screenHeld;
+        screenHeld = null;
+        held?.release().catch(() => {});
+        return;
+      }
+      if (screenHeld || screenAsked || !navigator.wakeLock) return;
+      screenAsked = true;
+      let held = null;
+      try { held = await navigator.wakeLock.request('screen'); } catch { /* refused: the phone keeps its own timing */ }
+      screenAsked = false;
+      if (!held) return;
+      held.addEventListener('release', () => { if (screenHeld === held) screenHeld = null; });
+      screenHeld = held;
+      // Full screen may have ended while the browser was answering.
+      if (!screenShouldStayOn()) keepScreenOn();
     }
 
     /* Out of full screen because the player is leaving the game: their next
@@ -11450,7 +11489,7 @@
           </span>
         </span>
         <span class="expected-contributions">
-          <span class="expected-contributions-label">${T`Expecting contributions from:`}</span>
+          <span class="expected-contributions-label">${T`Expects:`}</span>
           ${PLAYERS.filter(peer=>peer.id!==player.id).map(peer=>{
             const participation=clamp(1-forecast.peers[peer.id].probabilities[0],0,1);
             return `<button type="button" class="expected-peer" data-expectation-observer="${player.id}" data-expectation-peer="${peer.id}" aria-label="${T`${player.name} expects a ${fmt(100*participation)} percent chance that ${peer.name} contributes at least 1 energy. Show probabilities.`}" title="${T`${peer.name}: ${fmt(100*participation)}% chance of contributing`}"><img class="expected-peer-gray" src="assets/portraits/${peer.id}-med.webp" alt=""><img class="expected-peer-color" src="assets/portraits/${peer.id}-med.webp" alt="" style="--participation-fill:${100*participation}%"></button>`;
