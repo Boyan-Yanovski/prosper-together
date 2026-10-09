@@ -19,6 +19,9 @@ The model behind the game (how production works, where its equilibria lie and
 how the other players decide) is set out in the companion paper:
 [Prosper Together: the model behind the game (PDF)](https://boyan-yanovski.github.io/prosper-together/prosper-together-paper.pdf).
 
+More games like this one, and posts about what they show, are on Substack:
+[Experiential Economics](https://experientialeconomics.substack.com/).
+
 Created by Boyan Yanovski with the help of AI/SI friends.
 
 ---
