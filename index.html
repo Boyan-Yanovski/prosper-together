@@ -4906,6 +4906,8 @@
         padding: 5px max(7px, env(safe-area-inset-right)) 10px max(7px, env(safe-area-inset-left));
         background: linear-gradient(180deg, rgba(10,14,12,.9), rgba(10,14,12,.42) 74%, transparent);
       }
+      /* On an Android phone the bar runs from edge to edge, like the cards under it (see .seat-nw). */
+      html[data-device="android"] .topbar { padding-right: 7px; padding-left: 7px; }
 
       .topbar .brand {
         grid-column: 1;
@@ -5110,6 +5112,19 @@
       .seat-sw { left: max(5px, env(safe-area-inset-left)); }
       .seat-ne,
       .seat-se { right: max(5px, env(safe-area-inset-right)); }
+      /* An Android phone held sideways has its camera at one side, and
+         reports the whole strip the camera stands in (about 50 px, for a
+         camera a few millimetres across) as a safe area on that side only.
+         Kept clear, the strip leaves that side's cards a card's margin short
+         of the screen's edge and pushes them against the player's card. So
+         there the cards stand at the edge on both sides, as they do on the
+         side without a camera, and the top bar begins at the edge too. An
+         iPhone's notch is far larger and its safe areas are the same on both
+         sides: there they are kept. */
+      html[data-device="android"] .seat-nw,
+      html[data-device="android"] .seat-sw { left: 5px; }
+      html[data-device="android"] .seat-ne,
+      html[data-device="android"] .seat-se { right: 5px; }
 
       .seat-south {
         /* The card carries the reserve's column, and gives it up again rather
@@ -9033,6 +9048,10 @@
       transition: opacity .3s ease;
     }
     .level-frame.shown { opacity: 1; pointer-events: auto; }
+    /* On an Android phone the table's cards stand at the screen's edges, the
+       camera's side included (see .seat-nw); so the level in the frame is as
+       wide as the screen. */
+    html[data-device="android"] .level-frame { right: 0; left: 0; width: 100%; }
     body[data-view="level-frame"] { background: #0c1b17; }
     body[data-view="level-frame"] > :not(.level-frame) { display: none !important; }
     /* The same way back on the home screen, the guide and the briefings, which
@@ -10064,7 +10083,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.13.1-german';
+    const APP_VERSION = '12.13.2-german';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
