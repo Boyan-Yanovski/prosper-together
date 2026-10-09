@@ -4930,6 +4930,8 @@
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+      /* German runs a little longer: set a touch smaller, the series' question still ends with its own words. */
+      html[lang="de"] .topbar .eyebrow { font-size: clamp(.47rem, .775vw, .64rem); }
 
       .header-turn-counter {
         grid-column: 2;
@@ -8967,6 +8969,55 @@
     @media (prefers-reduced-motion: no-preference) {
       .opening-quit { animation: title-page-rise .9s .9s cubic-bezier(.2,.7,.2,1) both; }
     }
+    /* The language, to the left of Quit: a walnut stud holding the flag of
+       the language being played. Quit is as wide as its wording, so the
+       script hands that width over (placeLanguageToggle). */
+    .opening-language {
+      position: absolute;
+      z-index: 7;
+      top: var(--tools-top);
+      right: calc(var(--tools-right) + var(--quit-width, 132px) + 11px);
+      display: none;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(243,200,105,.72);
+      border-radius: 50%;
+      background:
+        repeating-linear-gradient(-5deg, transparent 0 8px, rgba(255,226,156,.05) 9px 10px),
+        linear-gradient(180deg, rgba(128,86,44,.94), rgba(74,46,24,.95));
+      box-shadow: inset 0 0 0 1.5px rgba(41,24,15,.5), 0 3px 0 #24150d, 0 9px 20px rgba(0,0,0,.45);
+      cursor: pointer;
+      transition: filter .16s ease, translate .16s ease;
+    }
+    body[data-view="title"] .opening-language { display: inline-flex; }
+    .opening-language:hover { filter: brightness(1.12); translate: 0 -1px; }
+    .opening-language:active { translate: 0 2px; }
+    .opening-language:focus-visible { outline: 2px solid #f3c869; outline-offset: 3px; }
+    .opening-language svg {
+      display: none;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1.5px #d9ac55, 0 0 0 2.5px rgba(41,24,15,.55), 0 1px 3px rgba(0,0,0,.45);
+      filter: saturate(.92);
+    }
+    html[data-language="en"] .opening-language svg[data-flag="en"],
+    html[data-language="de"] .opening-language svg[data-flag="de"] { display: block; }
+    /* A finger-sized target around the stud. */
+    .opening-language::after { position: absolute; inset: -6px -5px -8px -6px; content: ""; }
+    @media (max-height: 380px) {
+      .opening-language { top: max(5px, env(safe-area-inset-top)); width: 29px; height: 29px; }
+      .opening-language svg { width: 20px; height: 20px; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .opening-language { animation: title-page-rise .9s .9s cubic-bezier(.2,.7,.2,1) both; }
+    }
+    /* Another language is laid over the markup as the page loads
+       (game-language.js); the page is not shown half in each. */
+    html[data-language-pending] body { visibility: hidden; }
     /* The other level, opened in a frame over this page (openLevelInFrame).
        It stays clear of a phone's camera cut-out, as the page itself does. */
     .level-frame {
@@ -9165,6 +9216,9 @@
   </style>
   <link rel="stylesheet" href="victory-screen.css">
   <link rel="stylesheet" href="level2.css">
+  <!-- The language being played, and the German it can be played in. -->
+  <script src="game-language.js"></script>
+  <script src="game-language-de.js"></script>
   <script src="victory-screen.js"></script>
 </head>
 <body>
@@ -9179,6 +9233,13 @@
     <button class="opening-quit" id="titleQuit" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8v7.7"/><path d="M7.4 6.9a7.3 7.3 0 1 0 9.2 0"/></svg>
       <span data-ui-key="t467">Quit game</span>
+    </button>
+    <!-- The language, on the first page: the flag of the one being played.
+         A tap changes to the other and loads the page again in it
+         (game-language.js). -->
+    <button class="opening-language" id="languageToggle" type="button" aria-label="Language: English. Switch to German" title="Language: English. Switch to German">
+      <svg data-flag="en" viewBox="0 0 32 32" aria-hidden="true"><defs><clipPath id="languageFlagRound"><circle cx="16" cy="16" r="16"/></clipPath></defs><g clip-path="url(#languageFlagRound)"><path fill="#2a4480" d="M0 0h32v32H0z"/><path d="M0 0l32 32M32 0 0 32" stroke="#f6ecd4" stroke-width="6.6"/><path d="M0 0l32 32M32 0 0 32" stroke="#bf4038" stroke-width="2.3"/><path d="M16 0v32M0 16h32" stroke="#f6ecd4" stroke-width="10.4"/><path d="M16 0v32M0 16h32" stroke="#bf4038" stroke-width="6"/></g></svg>
+      <svg data-flag="de" viewBox="0 0 32 32" aria-hidden="true"><g clip-path="url(#languageFlagRound)"><path fill="#231d19" d="M0 0h32v11H0z"/><path fill="#bf4038" d="M0 10.7h32v11H0z"/><path fill="#e8b23f" d="M0 21.3h32V32H0z"/></g></svg>
     </button>
     <div class="opening-tools" id="openingTools">
       <button class="icon-button menu-button" id="openingMenuButton" type="button" aria-label="Open the menu" aria-haspopup="menu" aria-expanded="false" aria-controls="openingMenu">
@@ -9983,6 +10044,10 @@
   <script src="game-audio.js"></script>
   <script>
     'use strict';
+    /* The language being played (game-language.js). Another language than
+       English is laid over the markup here, before anything below reads it;
+       T and tr mark the text this script writes itself. */
+    CWT_LANGUAGE.translatePage();
 
     const IS_TEST_RUN = [...new URLSearchParams(location.search).keys()].some(key => /test$/.test(key));
     const ACTIVE_LEVEL = window.CWT_LEVEL;
@@ -9999,7 +10064,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.12.0-paper';
+    const APP_VERSION = '12.13.1-german';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
@@ -10205,7 +10270,7 @@
     const ENERGY_ICON = window.CWT_INLINE_ENERGY_ICON || '<svg class="energy-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 32c0 17 11 27 25 27s25-10 25-27v6.5c0 17-11 25-25 25s-25-8-25-25Z" fill="#956121"/><circle cx="32" cy="32" r="24" fill="#f5d56c" stroke="#704d1c" stroke-width="2.2"/><circle cx="32" cy="32" r="21" fill="none" stroke="#fff3b9" stroke-width="2.4" opacity=".68"/><circle cx="22" cy="21" r="3.2" fill="#fff6bd" opacity=".9"/><path d="m37 16-13 17h9l-2.5 15 13-17h-9l2.5-15Z" stroke="#765311" stroke-width="4.2"/></svg>';
     const SURVIVAL_ICON = '<svg class="survival-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.1 21.1 19.5H2.9L12 4.1Z"/><path d="M12 10.1v4"/><path d="M12 16.9h.01"/></svg>';
     const SUM_ICON = '<svg class="wellbeing-sum-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3.2H3.8l4.7 4.8-4.7 4.8H13"/></svg>';
-    const SCORE_LABEL = 'Score: average wellbeing per turn, reserve included';
+    const SCORE_LABEL = T`Score: average wellbeing per turn, reserve included`;
     /* ⌀, the average: a ring struck through, at the sum sign's size and weight. */
     const AVERAGE_ICON = '<svg class="wellbeing-average-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="4.6"/><path d="M3.2 12.8 12.8 3.2"/></svg>';
 
@@ -10372,6 +10437,13 @@
       {id:'organizer',name:'Rowan',role:'Organizer',automaton:true,position:'se',riskAversion:0,riskLabel:'bold'}
     );
 
+    // The trades, the goods and "You" are named in the language being played.
+    PLAYERS.forEach(player => {
+      player.role = tr(player.role);
+      if (!player.automaton) player.name = tr(player.name);
+    });
+    [...Object.values(COMMON_GOODS).flat(), ...BLAND_GOODS, ...MEAGRE_GOODS].forEach(good => { good.name = tr(good.name); });
+
     const $ = selector => document.querySelector(selector);
     const TEST_PARAMS = new URLSearchParams(location.search);
     /* A level opened inside the page of another, so that full screen goes on
@@ -10389,7 +10461,9 @@
        measures. Nothing in the game itself ever writes to it. */
     let reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches || TEST_PARAMS.has('goodscaptiontest') || TEST_PARAMS.has('autarkygoodstest') || TEST_PARAMS.has('survivaltest') || TEST_PARAMS.has('automatondeathtest');
     const sleep = ms => new Promise(resolve => setTimeout(resolve, reducedMotion ? Math.min(ms, 20) : ms));
-    const fmt = n => (Math.round((Number(n) + Number.EPSILON) * 10) / 10).toFixed(1).replace(/\.0$/, '');
+    const fmtPlain = n => (Math.round((Number(n) + Number.EPSILON) * 10) / 10).toFixed(1).replace(/\.0$/, '');
+    // As the language writes it: 1.5 in English, 1,5 in German. A number field takes fmtPlain.
+    const fmt = n => CWT_LANGUAGE.number(fmtPlain(n));
     const fmtPledge = fmt;
     const fmtSetting = n => String(Math.round((Number(n) + Number.EPSILON) * 100) / 100);
 
@@ -10553,8 +10627,8 @@
       });
       const needed = planner.diagnostics.neededNextTurn;
       plate.querySelector('[data-price-need]').textContent = needed > 0
-        ? 'Needs ' + fmt(needed) + ' this turn'
-        : 'Next requirement covered';
+        ? T`Needs ${fmt(needed)} this turn`
+        : T`Next requirement covered`;
       /* Nothing is for sale once they would commit everything unasked, and the
          card writes that as a dash, so the plate writes it the same way. */
       const quote = planner.quote(planner.commitment, 1, PLEDGE_INCREMENT, 1);
@@ -10572,7 +10646,7 @@
       rules.dataset.slide = String(openingRuleSlide);
       rules.dataset.paging = oneCard ? 'card' : 'slide';
       if (oneCard) sizeGuideCard();
-      rules.setAttribute('aria-label', `Core rules, slide ${openingRuleSlide + 1} of ${OPENING_RULE_SLIDE_COUNT}`);
+      rules.setAttribute('aria-label', T`Core rules, slide ${openingRuleSlide + 1} of ${OPENING_RULE_SLIDE_COUNT}`);
       document.querySelectorAll('.opening-rule[data-opening-slide]').forEach(rule => {
         rule.hidden = Number(rule.dataset.openingSlide) !== openingRuleSlide
           || (oneCard && slideCards.indexOf(rule) !== openingRuleCard);
@@ -10589,13 +10663,13 @@
       const pages = guidePages();
       const page = guidePageIndex(pages);
       $('#openingSlideStatus').textContent = `${page + 1}/${pages.length}`;
-      $('#openingSlideStatus').setAttribute('aria-label', `Explanation slide ${page + 1} of ${pages.length}`);
+      $('#openingSlideStatus').setAttribute('aria-label', T`Explanation slide ${page + 1} of ${pages.length}`);
       $('#openingSlidePrevious').disabled = page === 0;
       $('#openingSlideNext').innerHTML = page < pages.length - 1
-        ? 'Next'
+        ? T`Next`
         : guideReturnsToGame
-          ? 'Back to the game'
-          : 'Choose a level <span class="opening-arrow-down" aria-hidden="true"></span>';
+          ? T`Back to the game`
+          : T`Choose a level` + ' <span class="opening-arrow-down" aria-hidden="true"></span>';
       if (focus) requestAnimationFrame(() => $('#openingSlideNext')?.focus({ preventScroll: true }));
     }
 
@@ -10771,6 +10845,7 @@
       $('#levelBriefing').hidden = true;
       $('#openingFarewell').hidden = true;
       document.body.dataset.view = 'title';
+      placeLanguageToggle();
       requestAnimationFrame(() => $('#titlePagePlay')?.focus({ preventScroll: true }));
     }
 
@@ -10929,7 +11004,7 @@
       renderLearningGuideCard();
       renderPledgePriceGuideCard();
       const app = $('#gameApp');
-      const showFlow = [...TEST_PARAMS.keys()].every(key => key === 'dev' || key === 'phone')
+      const showFlow = [...TEST_PARAMS.keys()].every(key => key === 'dev' || key === 'phone' || key === 'lang')
         || TEST_PARAMS.has('intropreview')
         || TEST_PARAMS.has('guidepreview')
         || TEST_PARAMS.has('levelpreview');
@@ -10970,6 +11045,7 @@
         url.searchParams.set('play', '1');
         if (TEST_PARAMS.has('dev')) url.searchParams.set('dev', '');
         if (TEST_PARAMS.has('phone')) url.searchParams.set('phone', TEST_PARAMS.get('phone'));
+        CWT_LANGUAGE.carry(url);
         if (IN_LEVEL_FRAME) url.searchParams.set('frame', 'level');
         if (inFullscreen() && window.top === window && !PHONE_PREVIEW) openLevelInFrame(url);
         else location.href = url.href;
@@ -11166,8 +11242,8 @@
       const autarky = nobody.results.artist.total;
       const pays = plan > autarky + 1e-9;
       const figures = { plan: fmt(plan), autarky: fmt(autarky), rate: fmt(everyone.rate),
-        survivors: String(living.length), guarantee: fmtSetting(EASY_WAY_GUARANTEE),
-        margin: fmtSetting(EASY_WAY_GUARANTEE - HOME_RATE) };
+        survivors: String(living.length), guarantee: CWT_LANGUAGE.number(fmtSetting(EASY_WAY_GUARANTEE)),
+        margin: CWT_LANGUAGE.number(fmtSetting(EASY_WAY_GUARANTEE - HOME_RATE)) };
       dialog.querySelectorAll('[data-easy-way]').forEach(slot => { slot.textContent = figures[slot.dataset.easyWay]; });
       dialog.querySelectorAll('[data-easy-way-when]').forEach(reason => {
         reason.hidden = reason.dataset.easyWayWhen !== (pays ? 'pays' : 'fails');
@@ -11178,7 +11254,7 @@
         const vote = isAutomatonDeceased(player.id, deceasedAutomata) ? 'out' : pays ? 'yes' : 'no';
         return `<span class="easy-way-voter" data-easy-way-voter="${player.id}" data-vote="${vote}" style="--person:var(--${player.id})">`
           + `<img src="assets/portraits/${player.id}-med.webp" alt="">`
-          + `<span>${player.name}</span><b>${vote === 'out' ? 'Out' : vote === 'yes' ? 'Yes' : 'No'}</b></span>`;
+          + `<span>${player.name}</span><b>${vote === 'out' ? T`Out` : vote === 'yes' ? T`Yes` : T`No`}</b></span>`;
       }).join('');
     }
 
@@ -11349,16 +11425,16 @@
       const personalTrustPercent = Math.round(personalTrust * 100);
       return `
         <span class="risk-aversion-line" data-disabled-tooltip="Learning rate: ${fmt(100 * learningRate)}%. Bars are scaled relative to the highest configured learning rate. ${planning.reason}">
-          <span class="risk-aversion-label">Learning rate</span>
-          <span class="risk-aversion-meter" data-risk-meter="${player.id}" data-risk-fill="${meterFill.toFixed(1)}" role="img" aria-label="${player.name}: learning rate ${fmt(100 * learningRate)} percent; bar scaled relative to the highest configured rate">
+          <span class="risk-aversion-label">${T`Learning rate`}</span>
+          <span class="risk-aversion-meter" data-risk-meter="${player.id}" data-risk-fill="${meterFill.toFixed(1)}" role="img" aria-label="${T`${player.name}: learning rate ${fmt(100 * learningRate)} percent; bar scaled relative to the highest configured rate`}">
             <span class="risk-aversion-fill" style="--risk-fill:${meterFill.toFixed(1)}%"></span>
           </span>
         </span>
         <span class="expected-contributions">
-          <span class="expected-contributions-label">Expecting contributions from:</span>
+          <span class="expected-contributions-label">${T`Expecting contributions from:`}</span>
           ${PLAYERS.filter(peer=>peer.id!==player.id).map(peer=>{
             const participation=clamp(1-forecast.peers[peer.id].probabilities[0],0,1);
-            return `<button type="button" class="expected-peer" data-expectation-observer="${player.id}" data-expectation-peer="${peer.id}" aria-label="${player.name} expects a ${fmt(100*participation)} percent chance that ${peer.name} contributes at least 1 energy. Show probabilities." title="${peer.name}: ${fmt(100*participation)}% chance of contributing"><img class="expected-peer-gray" src="assets/portraits/${peer.id}-med.webp" alt=""><img class="expected-peer-color" src="assets/portraits/${peer.id}-med.webp" alt="" style="--participation-fill:${100*participation}%"></button>`;
+            return `<button type="button" class="expected-peer" data-expectation-observer="${player.id}" data-expectation-peer="${peer.id}" aria-label="${T`${player.name} expects a ${fmt(100*participation)} percent chance that ${peer.name} contributes at least 1 energy. Show probabilities.`}" title="${T`${peer.name}: ${fmt(100*participation)}% chance of contributing`}"><img class="expected-peer-gray" src="assets/portraits/${peer.id}-med.webp" alt=""><img class="expected-peer-color" src="assets/portraits/${peer.id}-med.webp" alt="" style="--participation-fill:${100*participation}%"></button>`;
           }).join('')}
         </span>
         <span class="personal-trust-line">
@@ -11381,7 +11457,7 @@
         dialog.setAttribute('aria-labelledby','expectationTitle');document.body.append(dialog);
         dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
       }
-      dialog.innerHTML=`<h3 id="expectationTitle">${observer.name} → ${peer.name}</h3><p>Expected contribution: <strong>${fmt(prediction.expectedEnergy)} of 3 energy</strong>.</p><p>${prediction.probabilities.map((p,k)=>`${k} energy: <strong>${fmt(100*p)}%</strong>`).join('<br>')}</p><p>Color fills the portrait from the bottom to show the chance of contributing at least 1 energy, not a guaranteed commitment.${prediction.deceased?' This player is out of play.':''}</p><form method="dialog"><button class="dialog-action">Close</button></form>`;
+      dialog.innerHTML=`<h3 id="expectationTitle">${observer.name} → ${peer.name}</h3><p>${T`Expected contribution:`} <strong>${T`${fmt(prediction.expectedEnergy)} of 3 energy`}</strong>.</p><p>${prediction.probabilities.map((p,k)=>`${T`${k} energy:`} <strong>${fmt(100*p)}%</strong>`).join('<br>')}</p><p>${T`Color fills the portrait from the bottom to show the chance of contributing at least 1 energy, not a guaranteed commitment.`}${prediction.deceased?T` This player is out of play.`:''}</p><form method="dialog"><button class="dialog-action">${T`Close`}</button></form>`;
       dialog.showModal();
     });
 
@@ -11443,11 +11519,11 @@
       if(candidate[playerId]?.extraUnits===extraUnits)delete candidate[playerId];
       else {
         const quote=pledgeQuoteFor(playerId,extraUnits);
-        if(!quote){prepaidNotice(playerId,'This contribution is not available.');AUDIO.cue('refused',{player:playerId});return false;}
+        if(!quote){prepaidNotice(playerId,T`This contribution is not available.`);AUDIO.cue('refused',{player:playerId});return false;}
         candidate[playerId]=quote;
       }
       const check=prepaidCheck(candidate);
-      if(!check.ok){prepaidNotice(playerId,check.reason);AUDIO.cue('refused',{player:playerId});return false;}
+      if(!check.ok){prepaidNotice(playerId,tr(check.reason));AUDIO.cue('refused',{player:playerId});return false;}
       state.pledges=candidate;
       state.automataCommitments=automataCommitmentsWithPledges(state.automataBaseCommitments,candidate);
       document.querySelector('.v8-contract-notice')?.remove();
@@ -11572,13 +11648,13 @@
         seat.innerHTML = `
           <div class="trade-decoration" aria-hidden="true">${TRADE_DECOR[player.id]}</div>
           ${player.automaton ? `<div class="deceased-mark" data-deceased-mark hidden>
-            <span class="deceased-seal"><strong>Out of play</strong><small>${player.role} input lost</small></span>
+            <span class="deceased-seal"><strong>${T`Out of play`}</strong><small>${T`${player.role} input lost`}</small></span>
           </div>` : ''}
           <div class="seat-inner">
             ${player.automaton ? '' : '<div class="survival-warning" data-survival-warning role="status" hidden></div>'}
             ${player.automaton ? '' : `<div class="player-vitals">
               <div class="role-icon">${ICONS[player.id]}</div>
-              <div class="survival-health" data-survival-health role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="Wellbeing reserve" hidden>
+              <div class="survival-health" data-survival-health role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="${T`Wellbeing reserve`}" hidden>
                 <span class="survival-health-track" aria-hidden="true"><span class="survival-health-fill"></span></span>
               </div>
             </div>`}
@@ -11586,7 +11662,7 @@
             <div class="seat-head">
               ${player.automaton ? `<div class="automaton-vitals">
                 <div class="role-icon">${ICONS[player.id]}</div>
-                <div class="survival-health" data-survival-health role="meter" aria-orientation="horizontal" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="${player.name} wellbeing reserve" hidden>
+                <div class="survival-health" data-survival-health role="meter" aria-orientation="horizontal" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="${T`${player.name} wellbeing reserve`}" hidden>
                   <span class="survival-health-track" aria-hidden="true"><span class="survival-health-fill"></span><span class="survival-progress-note" data-survival-progress></span></span>
                 </div>
               </div>` : ''}
@@ -11595,16 +11671,16 @@
                 ${player.automaton ? '<div class="base-commitment-note" data-base-commitment></div>' : '<div class="survival-progress-note" data-survival-progress hidden></div>'}
                 <div class="v9-reserve" data-reserve></div>
               </div>
-              ${player.automaton ? '' : '<div class="home-goods-shelf" data-empty="true" aria-label="Home goods produced this turn" aria-live="polite"></div>'}
+              ${player.automaton ? '' : `<div class="home-goods-shelf" data-empty="true" aria-label="${T`Home goods produced this turn`}" aria-live="polite"></div>`}
               ${player.automaton ? '' : '<span class="player-pledge-summary" data-pledge-summary hidden></span>'}
               ${player.automaton
-                ? `<div class="automaton-score-stack"><div class="wellbeing"><span class="score-label">Score:</span><strong data-total>—</strong><span aria-label="${SCORE_LABEL}">${AVERAGE_ICON}${WELLBEING_ICON}</span></div><span class="seat-turn-gain" data-turn-gain aria-live="polite"></span></div>`
+                ? `<div class="automaton-score-stack"><div class="wellbeing"><span class="score-label">${T`Score:`}</span><strong data-total>—</strong><span aria-label="${SCORE_LABEL}">${AVERAGE_ICON}${WELLBEING_ICON}</span></div><span class="seat-turn-gain" data-turn-gain aria-live="polite"></span></div>`
                 /* The turn's own figure is the control that opens the turn's
                    own summary: one thing in the header rather than a button
                    beside a number that says the same. The score heads the
                    same box, so the two figures a turn changes are read
                    together. */
-                : `<button class="player-turn-button player-last-turn" id="playerTurnButton" type="button" aria-label="No personal turn summary yet" data-disabled-tooltip="Your last turn" disabled hidden><span class="seat-turn-score"><span class="seat-turn-score-label">Score (<span class="seat-turn-score-marks" aria-label="${SCORE_LABEL}">${AVERAGE_ICON}${WELLBEING_ICON}</span>):</span><strong data-total>—</strong></span><span class="seat-turn-gain" data-turn-gain></span></button>`}
+                : `<button class="player-turn-button player-last-turn" id="playerTurnButton" type="button" aria-label="${T`No personal turn summary yet`}" data-disabled-tooltip="Your last turn" disabled hidden><span class="seat-turn-score"><span class="seat-turn-score-label">${T`Score`} (<span class="seat-turn-score-marks" aria-label="${SCORE_LABEL}">${AVERAGE_ICON}${WELLBEING_ICON}</span>):</span><strong data-total>—</strong></span><span class="seat-turn-gain" data-turn-gain></span></button>`}
             </div>
             ${player.automaton ? `
               <div class="energy-line">
@@ -11613,23 +11689,23 @@
                   <div class="energy-bank" aria-label="${player.name}'s revealed energy allocation"></div>
                 </div>
                 <div class="pledge-request">
-                  <div class="pledge-request-row"><span>Ask for</span>${[1,2,3].map(extra => `<button class="pledge-button" data-pledge-player="${player.id}" data-extra="${extra}" type="button">+${extra}</button>`).join('')}<span>of</span></div>
-                  <div class="pledge-request-copy">their special input for <span class="pledge-prices"></span> ${WELLBEING_ICON}</div>
+                  <div class="pledge-request-row"><span>${T`Ask for`}</span>${[1,2,3].map(extra => `<button class="pledge-button" data-pledge-player="${player.id}" data-extra="${extra}" type="button">+${extra}</button>`).join('')}<span>${T`of`}</span></div>
+                  <div class="pledge-request-copy">${T`their special input for`} <span class="pledge-prices"></span> ${WELLBEING_ICON}</div>
                 </div>
               </div>` : `
-              <div class="player-allocation" id="playerAllocationTray" aria-label="Drag each energy left for autarky or right for Artist work">
-                <div class="allocation-zone" data-zone="home" aria-label="Autarky: each energy placed here produces goods worth 1 wellbeing this turn">
-                  <span class="allocation-zone-label">← Autarky</span>
-                  <span class="allocation-zone-help" aria-hidden="true"><span class="nobr">Each ${ENERGY_ICON} makes goods</span><span class="nobr">worth <span class="num-wellbeing">1</span> ${WELLBEING_ICON}</span></span>
+              <div class="player-allocation" id="playerAllocationTray" aria-label="${T`Drag each energy left for autarky or right for Artist work`}">
+                <div class="allocation-zone" data-zone="home" aria-label="${T`Autarky: each energy placed here produces goods worth 1 wellbeing this turn`}">
+                  <span class="allocation-zone-label">← ${T`Autarky`}</span>
+                  <span class="allocation-zone-help" aria-hidden="true"><span class="nobr">${T`Each ${ENERGY_ICON} makes goods`}</span><span class="nobr">${T`worth`} <span class="num-wellbeing">1</span> ${WELLBEING_ICON}</span></span>
                   <div class="allocation-pile" data-pile="home"></div>
                 </div>
-                <div class="allocation-zone" data-zone="middle" aria-label="Unallocated energy">
-                  <span class="allocation-zone-label">Drag energy</span>
+                <div class="allocation-zone" data-zone="middle" aria-label="${T`Unallocated energy`}">
+                  <span class="allocation-zone-label">${T`Drag energy`}</span>
                   <div class="allocation-pile energy-bank" data-pile="middle"></div>
                 </div>
-                <div class="allocation-zone" data-zone="table" aria-label="Artist table: each energy placed here can produce increasingly valuable goods when other players also contribute">
-                  <span class="allocation-zone-label">Artist · table →</span>
-                  <span class="allocation-zone-help" aria-hidden="true"><span class="nobr">Each ${ENERGY_ICON} yields increasingly</span><span class="nobr">valuable goods when</span><span class="nobr">other players join</span></span>
+                <div class="allocation-zone" data-zone="table" aria-label="${T`Artist table: each energy placed here can produce increasingly valuable goods when other players also contribute`}">
+                  <span class="allocation-zone-label">${T`Artist · table`} →</span>
+                  <span class="allocation-zone-help" aria-hidden="true"><span class="nobr">${T`Each ${ENERGY_ICON} yields increasingly`}</span><span class="nobr">${T`valuable goods when`}</span><span class="nobr">${T`other players join`}</span></span>
                   <div class="allocation-pile" data-pile="table"></div>
                 </div>
               </div>`}
@@ -12046,9 +12122,9 @@
     }
 
     function playerAllocationSummary(counts) {
-      if (counts.middle === ENERGY_PER_TURN) return `<span class="num-energy">${counts.middle}</span> ${ENERGY_ICON} left to place`;
-      if (counts.middle > 0) return `<span class="num-energy">${counts.home}</span> at home · <span class="num-energy">${counts.table}</span> to table · <span class="num-energy">${counts.middle}</span> left to place`;
-      return `Commit <span class="num-energy">${counts.table}</span> to table · use <span class="num-energy">${counts.home}</span> at home`;
+      if (counts.middle === ENERGY_PER_TURN) return T`<span class="num-energy">${counts.middle}</span> ${ENERGY_ICON} left to place`;
+      if (counts.middle > 0) return T`<span class="num-energy">${counts.home}</span> at home · <span class="num-energy">${counts.table}</span> to table · <span class="num-energy">${counts.middle}</span> left to place`;
+      return T`Commit <span class="num-energy">${counts.table}</span> to table · use <span class="num-energy">${counts.home}</span> at home`;
     }
 
     function totalPledgedWellbeing(pledges = state.pledges) {
@@ -12086,8 +12162,8 @@
             ? 'Artist token for the common table. Drag toward the center or home.'
             : 'Unallocated energy. Drag left for autarky or right for Artist work.';
         token.setAttribute('aria-label', blandGood
-          ? `${blandGood.name}, produced at home from energy ${tokenId + 1}, worth 1 wellbeing.`
-          : `Energy ${tokenId + 1}: ${zone === 'home' ? 'autarky, worth 1 wellbeing' : zone === 'table' ? 'Artist token committed to the table' : 'unallocated'}. Use Left and Right Arrow keys to move it.`);
+          ? T`${blandGood.name}, produced at home from energy ${tokenId + 1}, worth 1 wellbeing.`
+          : T`Energy ${tokenId + 1}: ${zone === 'home' ? T`autarky, worth 1 wellbeing` : zone === 'table' ? T`Artist token committed to the table` : T`unallocated`}. Use Left and Right Arrow keys to move it.`);
         token.addEventListener('keydown', event => {
           if (state.phase !== 'planning' || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
           event.preventDefault();
@@ -12311,10 +12387,9 @@
       host.hidden = false;
       if (survival.lost) {
         host.dataset.level = 'lost';
-        host.innerHTML = `${SURVIVAL_ICON}<span class="survival-warning-copy">The last `
-          + `<strong>${survival.windowTurns}</strong> turns returned `
-          + `<strong class="num-wellbeing">${fmt(survival.windowSum)}</strong>${WELLBEING_ICON} of `
-          + `${fmt(survival.minimum)} — the run is over.</span>`;
+        host.innerHTML = `${SURVIVAL_ICON}<span class="survival-warning-copy">`
+          + T`The last <strong>${survival.windowTurns}</strong> turns returned <strong class="num-wellbeing">${fmt(survival.windowSum)}</strong>${WELLBEING_ICON} of ${fmt(survival.minimum)} — the run is over.`
+          + '</span>';
         host.dataset.disabledTooltip = `The last ${survival.windowTurns} turns returned ${fmt(survival.windowSum)} wellbeing in total, `
           + `under the ${fmt(survival.minimum)} any ${survival.windowTurns} turns in a row have to return.`;
         return;
@@ -12326,8 +12401,12 @@
       host.dataset.level = survival.immediate ? 'urgent' : 'watch';
       host.innerHTML = `${SURVIVAL_ICON}<span class="survival-warning-copy">`
         + (horizon === 1
-          ? `Consume at least <strong class="num-wellbeing">${fmt(needed)}</strong>${WELLBEING_ICON} ${pending ? 'this turn' : 'next turn'} to survive.`
-          : `Over the next ${horizon} turns${pending ? ', including this one,' : ','} consume at least <strong class="num-wellbeing">${fmt(needed)}</strong>${WELLBEING_ICON} in total to survive.`)
+          ? (pending
+            ? T`Consume at least <strong class="num-wellbeing">${fmt(needed)}</strong>${WELLBEING_ICON} this turn to survive.`
+            : T`Consume at least <strong class="num-wellbeing">${fmt(needed)}</strong>${WELLBEING_ICON} next turn to survive.`)
+          : (pending
+            ? T`Over the next ${horizon} turns, including this one, consume at least <strong class="num-wellbeing">${fmt(needed)}</strong>${WELLBEING_ICON} in total to survive.`
+            : T`Over the next ${horizon} turns, consume at least <strong class="num-wellbeing">${fmt(needed)}</strong>${WELLBEING_ICON} in total to survive.`))
         + '</span>';
       host.dataset.disabledTooltip = `Last turn returned ${fmt(survival.lastGain)} wellbeing, under the ${fmt(survival.perTurnFloor)} a turn this rule asks for. `
         + `Any ${survival.windowTurns} turns in a row that return less than ${fmt(survival.minimum)} in total end the run. `
@@ -12359,19 +12438,19 @@
         : survival.warned && survival.immediate ? 'urgent'
         : survival.warned || survival.health < 1 - 1e-9 ? 'watch'
         : 'steady';
-      const when = survival.played < state.turn ? 'this turn' : 'next turn';
+      const dueThisTurn = survival.played < state.turn;
       const deadline = survival.immediate
-        ? 'Needs ' + fmt(survival.immediate.needed) + ' ' + when
-        : survival.demand ? 'Needs ' + fmt(survival.demand.needed) + ' over ' + survival.demand.horizon + ' turns'
-        : 'Next requirement covered';
-      const reading = survival.lost ? (player?.automaton ? 'Out of play' : 'The run is over') : deadline;
+        ? (dueThisTurn ? T`Needs ${fmt(survival.immediate.needed)} this turn` : T`Needs ${fmt(survival.immediate.needed)} next turn`)
+        : survival.demand ? T`Needs ${fmt(survival.demand.needed)} over ${survival.demand.horizon} turns`
+        : T`Next requirement covered`;
+      const reading = survival.lost ? (player?.automaton ? T`Out of play` : T`The run is over`) : deadline;
       if (note) note.textContent = reading;
-      const progress = fmt(survival.windowSum) + ' of ' + fmt(survival.minimum)
-        + ' wellbeing in the latest ' + Math.min(survival.played, survival.windowTurns) + ' completed turns'
-        + (survival.played < survival.windowTurns ? '. The bar includes display-only baseline placeholders for unplayed turns; these do not count toward survival or scores' : '');
+      const progress = T`${fmt(survival.windowSum)} of ${fmt(survival.minimum)} wellbeing in the latest ${Math.min(survival.played, survival.windowTurns)} completed turns`
+        + (survival.played < survival.windowTurns ? T`. The bar includes display-only baseline placeholders for unplayed turns; these do not count toward survival or scores` : '');
       host.dataset.disabledTooltip = owner + ' wellbeing reserve: ' + progress + '. ' + reading
         + '. Death is checked only after a full ' + survival.windowTurns + '-turn window; equality survives.';
-      host.setAttribute('aria-label', owner + ' wellbeing reserve, ' + percent + '%. ' + progress + '. ' + reading);
+      host.setAttribute('aria-label', (player?.automaton ? T`${player.name} wellbeing reserve` : T`Your wellbeing reserve`)
+        + ', ' + percent + '%. ' + progress + '. ' + reading);
     }
 
     function renderPlayerSeat(seat = $('.seat-you')) {
@@ -12398,7 +12477,7 @@
       const paid = Object.values(state.pledges).reduce((n,p)=>n+p.amount,0);
       host.hidden = paid === 0;
       host.dataset.pledgeState = 'delivered';
-      host.innerHTML = fmt(paid) + ' goods ' + (state.phase==='planning'?'set aside':'paid upfront');
+      host.innerHTML = state.phase==='planning' ? T`${fmt(paid)} goods set aside` : T`${fmt(paid)} goods paid upfront`;
     }
 
     /* The wellbeing a player took from the turn on the table, beside the three
@@ -12422,7 +12501,7 @@
          plus the table's return, and neither can come out below zero, so a
          plus would only be decoration. */
       const when = turnGains ? 'This turn' : 'Last turn';
-      host.innerHTML = `<span class="seat-turn-when">${when}:</span>`
+      host.innerHTML = `<span class="seat-turn-when">${tr(when)}:</span>`
         + `<span class="seat-turn-value"><span class="num-wellbeing">${fmt(gain)}</span>${WELLBEING_ICON}</span>`;
       /* On your own card this is the net: what home and the table produced,
          less whatever was handed to the players you had promised. */
@@ -12459,9 +12538,7 @@
           deceasedMark.hidden = !deceased;
           if (deceased) {
             const frontier = death.frontierAfter || productionFrontier();
-            deceasedMark.dataset.disabledTooltip = `${player.name} ran out of wellbeing after turn ${death.turn}. `
-              + `${player.role} inputs are permanently unavailable. With ${frontier.availablePlayers} players left, `
-              + `the best possible collaborative return is ${fmt(frontier.maximumTableWellbeingPerPlayer)} wellbeing per remaining player per turn.`;
+            deceasedMark.dataset.disabledTooltip = T`${player.name} ran out of wellbeing after turn ${death.turn}. ${player.role} inputs are permanently unavailable. With ${frontier.availablePlayers} players left, the best possible collaborative return is ${fmt(frontier.maximumTableWellbeingPerPlayer)} wellbeing per remaining player per turn.`;
             deceasedMark.setAttribute('aria-label', deceasedMark.dataset.disabledTooltip);
           }
         }
@@ -12476,20 +12553,22 @@
         total.textContent = scoreText(player.id);
         const reserveReadout=seat.querySelector('[data-reserve]');
         reserveReadout.hidden = state.phase === 'goods-preview';
-        reserveReadout.textContent = 'Reserve: '+fmt(state.reserves[player.id])+' goods';
+        reserveReadout.textContent = T`Reserve: ${fmt(state.reserves[player.id])} goods`;
         renderTurnGain(seat.querySelector('[data-turn-gain]'), player);
         if (!player.automaton) {
           renderPlayerSeat(seat);
         } else {
           const baseNote = seat.querySelector('[data-base-commitment]');
-          baseNote.innerHTML = deceased ? 'Out of play' : `<span class="base-commitment-line">Of their own accord willing to</span><span class="base-commitment-line">invest <strong class="base-commitment-value">${state.automataBaseCommitments[player.id]}</strong> of their ${ENERGY_ICON} into their trade</span>`;
+          baseNote.innerHTML = deceased ? T`Out of play` : `<span class="base-commitment-line">${T`Of their own accord willing to`}</span><span class="base-commitment-line">${T`invest <strong class="base-commitment-value">${state.automataBaseCommitments[player.id]}</strong> of their ${ENERGY_ICON} into their trade`}</span>`;
           baseNote.dataset.disabledTooltip = 'Energy committed to the table on their own. An accepted pledge adds its selected extra units; it does not change this base commitment.';
           renderSurvivalHealth(seat.querySelector('[data-survival-health]'), player.id);
           bank.innerHTML = '';
           bank.hidden = hidden || deceased;
           seat.querySelector('.v8-allocation-label').hidden = true;
           const displayedCommitment = hidden ? state.automataCommitments[player.id] : commitment;
-          bank.setAttribute('aria-label', `${player.name}'s ${hidden ? 'upcoming' : 'revealed'} energy allocation: ${displayedCommitment || 0} to the table, ${ENERGY_PER_TURN - (displayedCommitment || 0)} to autarky`);
+          bank.setAttribute('aria-label', hidden
+            ? T`${player.name}'s upcoming energy allocation: ${displayedCommitment || 0} to the table, ${ENERGY_PER_TURN - (displayedCommitment || 0)} to autarky`
+            : T`${player.name}'s revealed energy allocation: ${displayedCommitment || 0} to the table, ${ENERGY_PER_TURN - (displayedCommitment || 0)} to autarky`);
           for (let unit = 1; !bank.hidden && unit <= ENERGY_PER_TURN; unit += 1) {
             const pip = document.createElement('span');
             pip.className = 'energy-pip';
@@ -12503,18 +12582,18 @@
             pip.dataset.disabledTooltip = toTable
               ? `${player.role} specialization token · committed to the table`
               : 'Autarky house token · kept for own wellbeing';
-            pip.setAttribute('aria-label', `Energy ${unit}: ${toTable ? `committed to the table as a ${player.role} specialization token` : 'kept in autarky as a house token for own wellbeing'}`);
+            pip.setAttribute('aria-label', T`Energy ${unit}: ${toTable ? T`committed to the table as a ${player.role} specialization token` : T`kept in autarky as a house token for own wellbeing`}`);
             bank.appendChild(pip);
           }
 
           if (deceased) {
             breakdown.className = 'automaton-metrics deceased-summary';
-            breakdown.innerHTML = `<span>${player.role} specialization lost</span>`;
+            breakdown.innerHTML = `<span>${T`${player.role} specialization lost`}</span>`;
             if (pledgeButton) {
               pledgeButton.hidden = true;
               pledgeButton.disabled = true;
               pledgeButton.dataset.availability = 'deceased';
-              pledgeButton.setAttribute('aria-label', `${player.name} is out of play and cannot receive a pledge`);
+              pledgeButton.setAttribute('aria-label', T`${player.name} is out of play and cannot receive a pledge`);
             }
           } else if (hidden) {
             const belief = state.coordinationBeliefs[player.id];
@@ -12533,8 +12612,9 @@
               button.classList.toggle('active', selected);
               button.classList.toggle('v8-unavailable', !selected && !check.ok);
               button.setAttribute('aria-pressed', String(selected));
-              button.setAttribute('aria-label', selected ? 'Withdraw pledge for ' + player.name
-                : 'Pay ' + (quote?fmtPledge(quote.amount):'unavailable') + ' goods from reserves for ' + extra + ' additional energy from ' + player.name + ' this turn');
+              button.setAttribute('aria-label', selected ? T`Withdraw pledge for ${player.name}`
+                : quote ? T`Pay ${fmtPledge(quote.amount)} goods from reserves for ${extra} additional energy from ${player.name} this turn`
+                : T`Pay unavailable goods from reserves for ${extra} additional energy from ${player.name} this turn`);
             });
             seat.querySelector('.pledge-prices').innerHTML=[1,2,3].filter(k=>k<=3-state.automataBaseCommitments[player.id])
               .map(k=>{const q=pledgeQuoteFor(player.id,k);return q?fmtPledge(q.amount):'—';}).join(' / ');
@@ -12558,7 +12638,7 @@
             if (pledgeButton) pledgeButton.hidden = true;
             const amount = commitment || 0;
             breakdown.className = '';
-            breakdown.textContent = `${ENERGY_PER_TURN - amount} kept · ${amount} table`;
+            breakdown.textContent = T`${ENERGY_PER_TURN - amount} kept · ${amount} table`;
           }
         }
         seat.classList.toggle('active-seat', !deceased && state.phase !== 'planning' && (commitment || 0) > 0);
@@ -12613,7 +12693,7 @@
 
     function updateSummary() {
       $('#turnValue').textContent = state.turn;
-      $('.header-turn-counter').setAttribute('aria-label', `Current turn ${state.turn}`);
+      $('.header-turn-counter').setAttribute('aria-label', T`Current turn ${state.turn}`);
     }
 
     function clearTable() {
@@ -12744,8 +12824,8 @@
       good.style.animationDelay = `${reducedMotion ? 0 : delay}ms`;
       if (reducedMotion) good.style.animation = 'none';
       good.setAttribute('aria-label', meagre
-        ? `${goodAsset.name} for ${player.name}, ${commitment} committed energy returned less per energy than autarky`
-        : `${goodAsset.name} for ${player.name}, sized for ${commitment} committed energy`);
+        ? T`${goodAsset.name} for ${player.name}, ${commitment} committed energy returned less per energy than autarky`
+        : T`${goodAsset.name} for ${player.name}, sized for ${commitment} committed energy`);
       good.dataset.disabledTooltip = meagre
         ? `${goodAsset.name} · ${commitment} energy · worth less than autarky`
         : `${goodAsset.name} · ${commitment} energy`;
@@ -12757,10 +12837,10 @@
 
     async function wasteAnimation(result, runGeneration) {
       $('#tableShell').dataset.state = 'waste';
-      setStatus('A specialization cannot combine alone', `With no other special token at the table, this contribution creates no common good and receives <span class="num-wellbeing">0</span> table ${WELLBEING_ICON}.`);
+      setStatus(T`A specialization cannot combine alone`, T`With no other special token at the table, this contribution creates no common good and receives <span class="num-wellbeing">0</span> table ${WELLBEING_ICON}.`);
       const note = document.createElement('div');
       note.className = 'waste-note';
-      note.innerHTML = `No common good · <span class="num-wellbeing">0</span> table ${WELLBEING_ICON}`;
+      note.innerHTML = T`No common good · <span class="num-wellbeing">0</span> table ${WELLBEING_ICON}`;
       $('#mixZone').appendChild(note);
       AUDIO.cue('waste');
       await sleep(420);
@@ -12794,24 +12874,24 @@
         userGood.classList.add('your-return-good');
         const valueBadge = document.createElement('span');
         valueBadge.className = 'your-good-value';
-        valueBadge.innerHTML = `Yours · +${fmt(userResult.table)} ${WELLBEING_ICON}`;
+        valueBadge.innerHTML = T`Yours · +${fmt(userResult.table)} ${WELLBEING_ICON}`;
         userGood.appendChild(valueBadge);
         userGood.dataset.disabledTooltip = `${userGood.dataset.good} · yours · +${fmt(userResult.table)} wellbeing`;
-        userGood.setAttribute('aria-label', `${userGood.dataset.good}, your shared good, worth ${fmt(userResult.table)} wellbeing`);
+        userGood.setAttribute('aria-label', T`${userGood.dataset.good}, your shared good, worth ${fmt(userResult.table)} wellbeing`);
       }
       const tableDetail = userGood && meagre
-        ? `The <span class="good-highlight">${userGood.dataset.good}</span> is all your share came to. <span class="num-energy">${userResult.committed}</span> committed ${ENERGY_ICON} yielded <span class="num-wellbeing">${fmt(userResult.table)}</span> ${WELLBEING_ICON}.`
+        ? T`The <span class="good-highlight">${userGood.dataset.good}</span> is all your share came to. <span class="num-energy">${userResult.committed}</span> committed ${ENERGY_ICON} yielded <span class="num-wellbeing">${fmt(userResult.table)}</span> ${WELLBEING_ICON}.`
         : userGood
-        ? `The <span class="good-highlight">${userGood.dataset.good}</span> is your share of the collaborative effort. <span class="num-energy">${userResult.committed}</span> committed ${ENERGY_ICON} yielded <span class="num-wellbeing">${fmt(userResult.table)}</span> ${WELLBEING_ICON}.`
+        ? T`The <span class="good-highlight">${userGood.dataset.good}</span> is your share of the collaborative effort. <span class="num-energy">${userResult.committed}</span> committed ${ENERGY_ICON} yielded <span class="num-wellbeing">${fmt(userResult.table)}</span> ${WELLBEING_ICON}.`
         : userResult.committed > 0
-          ? `Your <span class="num-energy">${userResult.committed}</span> committed ${ENERGY_ICON} yielded <span class="num-wellbeing">${fmt(userResult.table)}</span> ${WELLBEING_ICON} from the table.`
-          : `You committed no ${ENERGY_ICON} to the table, so your table return is <span class="num-wellbeing">0</span> ${WELLBEING_ICON}.`;
+          ? T`Your <span class="num-energy">${userResult.committed}</span> committed ${ENERGY_ICON} yielded <span class="num-wellbeing">${fmt(userResult.table)}</span> ${WELLBEING_ICON} from the table.`
+          : T`You committed no ${ENERGY_ICON} to the table, so your table return is <span class="num-wellbeing">0</span> ${WELLBEING_ICON}.`;
       const pledgeTitle = pledgeSettlement?.totalPromised > 0
         ? ` · Pledges <span class="num-wellbeing">−${fmt(pledgeSettlement.totalPaid)}</span>`
         : '';
       /* Describe the actual return, without confusing headcount and balance. */
       const shortfallNote = meagre
-        ? `<span class="shortfall-note">${result.activeCount} distinct trades contributed — this mix of inputs returned less per energy than autarky.</span> `
+        ? `<span class="shortfall-note">${T`${result.activeCount} distinct trades contributed — this mix of inputs returned less per energy than autarky.`}</span> `
         : '';
       /* Net leads the headline: it is the one number that already accounts for
          home, table and pledges together. What became of the pledges themselves
@@ -12823,8 +12903,7 @@
          player's to write, on their own card. */
       setStatus(
         deciding
-          ? `Your production · Autarky <span class="num-wellbeing">+${fmt(userResult.home)}</span>`
-            + ` · Table <span class="num-wellbeing">+${fmt(userResult.table)}</span>`
+          ? T`Your production · Autarky <span class="num-wellbeing">+${fmt(userResult.home)}</span> · Table <span class="num-wellbeing">+${fmt(userResult.table)}</span>`
           : `Your payoff · Net <span class="num-wellbeing">+${fmt(userResult.total)}</span>`
             + ` · Autarky <span class="num-wellbeing">+${fmt(userResult.home)}</span>`
             + ` · Table <span class="num-wellbeing">+${fmt(userResult.table)}</span>${pledgeTitle}`,
@@ -12858,7 +12937,7 @@
       } else {
         continueAction.hidden = false;
         continueAction.disabled = false;
-        continueAction.querySelector('span').textContent = 'Continue';
+        continueAction.querySelector('span').textContent = T`Continue`;
         if (reducedMotion) continueAction.style.animation = 'none';
         adjustResponsiveClearance();
         requestAnimationFrame(() => continueAction.focus({ preventScroll: true }));
@@ -12896,7 +12975,7 @@
       continueAction.hidden = true;
       primary.hidden = false;
       primary.disabled = true;
-      primary.querySelector('span').textContent = completedInspection === 'home' ? 'Finishing turn…' : 'Returning goods…';
+      primary.querySelector('span').textContent = completedInspection === 'home' ? T`Finishing turn…` : T`Returning goods…`;
       $('#tableShell').dataset.state = completedInspection === 'home' ? 'home-production' : 'returning';
       adjustResponsiveClearance();
       resume();
@@ -12909,10 +12988,10 @@
       $('#tableShell').dataset.state = 'mixing';
       $('#tableShell').dataset.grade = meagre ? 'meagre' : 'common';
       setStatus(
-        meagre ? `${activePlayers.length} trades produce below autarky` : `${activePlayers.length} specializations combine`,
+        meagre ? T`${activePlayers.length} trades produce below autarky` : T`${activePlayers.length} specializations combine`,
         meagre
-          ? `This mix of special inputs yields less per energy than autarky. The <span class="num-energy">${result.totalEnergy}</span> ${ENERGY_ICON} produces meagre goods.`
-          : `<span class="num-energy">${result.totalEnergy}</span> ${ENERGY_ICON} is woven into ${activePlayers.length} common goods — one for every contributor.`
+          ? T`This mix of special inputs yields less per energy than autarky. The <span class="num-energy">${result.totalEnergy}</span> ${ENERGY_ICON} produces meagre goods.`
+          : T`<span class="num-energy">${result.totalEnergy}</span> ${ENERGY_ICON} is woven into ${activePlayers.length} common goods — one for every contributor.`
       );
       const inputs = [...$('#mixZone').querySelectorAll('.special-token')];
       AUDIO.cue('gather');
@@ -12951,10 +13030,10 @@
       await pauseForGoodsInspection(result, pledgeSettlement);
       if (generation !== runGeneration) return;
       setStatus(
-        meagre ? 'The meagre goods return' : 'The common goods return',
+        meagre ? T`The meagre goods return` : T`The common goods return`,
         meagre
-          ? `Each contributor receives <span class="num-wellbeing">${fmt(result.rate)}</span> ${WELLBEING_ICON} per committed ${ENERGY_ICON} — less than the <span class="num-wellbeing">1</span> ${WELLBEING_ICON} the same ${ENERGY_ICON} would have paid at home.`
-          : `Each contributor receives <span class="num-wellbeing">${fmt(result.rate)}</span> ${WELLBEING_ICON} per committed ${ENERGY_ICON}.`
+          ? T`Each contributor receives <span class="num-wellbeing">${fmt(result.rate)}</span> ${WELLBEING_ICON} per committed ${ENERGY_ICON} — less than the <span class="num-wellbeing">1</span> ${WELLBEING_ICON} the same ${ENERGY_ICON} would have paid at home.`
+          : T`Each contributor receives <span class="num-wellbeing">${fmt(result.rate)}</span> ${WELLBEING_ICON} per committed ${ENERGY_ICON}.`
       );
       await animateGoodsTransformationAndFlow(result, runGeneration);
     }
@@ -13186,10 +13265,10 @@
         const requested=Number(e.target.value)||0;
         if(Math.floor(requested)!==Math.floor(pledgeDesk.consume))AUDIO.cue('tick');
         pledgeDesk.consume=clamp(requested,pledgeDeskMinimumConsumption(),pledgeDesk.pool);
-        if(requested!==pledgeDesk.consume)e.target.value=fmt(pledgeDesk.consume);
+        if(requested!==pledgeDesk.consume)e.target.value=fmtPlain(pledgeDesk.consume);
         renderPledgeDesk();
       });
-      $('#consumeAmount').addEventListener('blur',()=>{if(pledgeDesk)$('#consumeAmount').value=fmt(pledgeDesk.consume);});
+      $('#consumeAmount').addEventListener('blur',()=>{if(pledgeDesk)$('#consumeAmount').value=fmtPlain(pledgeDesk.consume);});
       /* Enter in the field is the answer, as it is in any form. */
       $('#consumeAmount').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();continueGoodsInspection();}});
     }
@@ -13206,11 +13285,11 @@
       const consume=pledgeDesk.consume=clamp(pledgeDesk.consume,least,pledgeDesk.pool);
       $('#pledgeDeskPool').textContent=fmt(pledgeDesk.pool);
       $('#pledgeDeskKeep').textContent=fmt(pledgeDesk.pool-consume);
-      $('#pledgeDeskSubmit').setAttribute('aria-label','Consume '+fmt(consume)+', keep '+fmt(pledgeDesk.pool-consume)+' and finish the turn');
+      $('#pledgeDeskSubmit').setAttribute('aria-label',T`Consume ${fmt(consume)}, keep ${fmt(pledgeDesk.pool-consume)} and finish the turn`);
       for(const id of ['consumeAmount','consumeSlider']){
         const el=$('#'+id);el.max=String(pledgeDesk.pool);el.min=String(least);
         if(id==='consumeSlider')el.value=String(consume);
-        else if(document.activeElement!==el)el.value=fmt(consume);
+        else if(document.activeElement!==el)el.value=fmtPlain(consume);
       }
       /* How far along the rail the coin stands. With nothing to choose
          between, everything there is is consumed: the rail is locked with the
@@ -13220,8 +13299,8 @@
       if(slider.disabled){slider.min=String(least-1);slider.value=String(consume);}
       slider.style.setProperty('--filled',slider.disabled?'1':String((consume-least)/room));
       $('#consumeAdvice').textContent=consume+1e-9<need
-        ? 'Less than '+fmt(need)+' ends your run'
-        : need>1e-9 ? 'At least '+fmt(need)+' for the health check' : 'No minimum this turn';
+        ? T`Less than ${fmt(need)} ends your run`
+        : need>1e-9 ? T`At least ${fmt(need)} for the health check` : T`No minimum this turn`;
       $('#consumeAdvice').classList.toggle('v9-danger',consume+1e-9<need);
       if(turnGains)PLAYERS.forEach(p=>{turnGains[p.id]=p.id==='artist'?consume:
         isAutomatonDeceased(p.id)?0:CommonWorksReserves.consume(state.reserves[p.id]+pledgeDesk.grossGains[p.id],
@@ -13553,32 +13632,32 @@
       const completed = state.history.at(-1);
       if (!completed) {
         button.disabled = true;
-        button.setAttribute('aria-label', 'No personal turn summary yet');
+        button.setAttribute('aria-label', T`No personal turn summary yet`);
         return;
       }
 
       const row = completed.result.results.artist;
       $('#playerTurnNumber').textContent = completed.turn;
-      $('#playerAllocation').innerHTML = `You committed <strong><span class="num-energy">${row.committed}</span> ${ENERGY_ICON} to the table</strong> and used <strong><span class="num-energy">${ENERGY_PER_TURN - row.committed}</span> ${ENERGY_ICON} at home</strong>. Home produced <strong><span class="num-wellbeing">${fmt(row.home)}</span> ${WELLBEING_ICON}</strong>; the table produced <strong><span class="num-wellbeing">${fmt(row.table)}</span> ${WELLBEING_ICON}</strong>.`;
+      $('#playerAllocation').innerHTML = T`You committed <strong><span class="num-energy">${row.committed}</span> ${ENERGY_ICON} to the table</strong> and used <strong><span class="num-energy">${ENERGY_PER_TURN - row.committed}</span> ${ENERGY_ICON} at home</strong>. Home produced <strong><span class="num-wellbeing">${fmt(row.home)}</span> ${WELLBEING_ICON}</strong>; the table produced <strong><span class="num-wellbeing">${fmt(row.table)}</span> ${WELLBEING_ICON}</strong>.`;
 
       if (row.committed === 0) {
-        $('#playerOutcome').textContent = 'You worked entirely at home and did not take part in the common work.';
+        $('#playerOutcome').textContent = T`You worked entirely at home and did not take part in the common work.`;
       } else if (completed.result.activeCount === 1) {
-        $('#playerOutcome').innerHTML = `No other specialization joined you, so no common good was made and the table returned <span class="num-wellbeing">0</span> ${WELLBEING_ICON}.`;
+        $('#playerOutcome').innerHTML = T`No other specialization joined you, so no common good was made and the table returned <span class="num-wellbeing">0</span> ${WELLBEING_ICON}.`;
       } else {
-        $('#playerOutcome').innerHTML = `${completed.result.activeCount} specializations joined the table. Each committed ${ENERGY_ICON} returned <span class="num-wellbeing">${fmt(completed.result.rate)}</span> ${WELLBEING_ICON}.`;
+        $('#playerOutcome').innerHTML = T`${completed.result.activeCount} specializations joined the table. Each committed ${ENERGY_ICON} returned <span class="num-wellbeing">${fmt(completed.result.rate)}</span> ${WELLBEING_ICON}.`;
       }
       const settlement = completed.pledgeSettlement;
       if (settlement.totalPromised > 0) {
         $('#playerOutcome').innerHTML += settlement.fullyDelivered
-          ? ` You fully delivered <span class="num-wellbeing">${fmt(settlement.totalPaid)}</span> ${WELLBEING_ICON} in pledged goods from your gross <span class="num-wellbeing">${fmt(settlement.artistGross)}</span> ${WELLBEING_ICON}.`
+          ? T` You fully delivered <span class="num-wellbeing">${fmt(settlement.totalPaid)}</span> ${WELLBEING_ICON} in pledged goods from your gross <span class="num-wellbeing">${fmt(settlement.artistGross)}</span> ${WELLBEING_ICON}.`
           : settlement.decided
-            ? ` You handed over <span class="num-wellbeing">${fmt(settlement.totalPaid)}</span> of the <span class="num-wellbeing">${fmt(settlement.totalPromised)}</span> ${WELLBEING_ICON} promised and kept <span class="num-wellbeing">${fmt(settlement.artistNet)}</span>. Everyone who was short lost Trust in you, by how far their own promise fell.`
-            : ` Your gross <span class="num-wellbeing">${fmt(settlement.artistGross)}</span> ${WELLBEING_ICON} covered only <span class="num-wellbeing">${fmt(settlement.totalPaid)}</span> of <span class="num-wellbeing">${fmt(settlement.totalPromised)}</span> promised. The available amount was divided proportionally and the affected automata lost Trust in you.`;
+            ? T` You handed over <span class="num-wellbeing">${fmt(settlement.totalPaid)}</span> of the <span class="num-wellbeing">${fmt(settlement.totalPromised)}</span> ${WELLBEING_ICON} promised and kept <span class="num-wellbeing">${fmt(settlement.artistNet)}</span>. Everyone who was short lost Trust in you, by how far their own promise fell.`
+            : T` Your gross <span class="num-wellbeing">${fmt(settlement.artistGross)}</span> ${WELLBEING_ICON} covered only <span class="num-wellbeing">${fmt(settlement.totalPaid)}</span> of <span class="num-wellbeing">${fmt(settlement.totalPromised)}</span> promised. The available amount was divided proportionally and the affected automata lost Trust in you.`;
       }
       $('#playerTurnTotal').innerHTML = `+<span class="num-wellbeing">${fmt(row.total)}</span>`;
       button.disabled = false;
-      button.setAttribute('aria-label', `Score ${scoreText('artist')}, average wellbeing per turn with reserve. Open your short summary for turn ${completed.turn}`);
+      button.setAttribute('aria-label', T`Score ${scoreText('artist')}, average wellbeing per turn with reserve. Open your short summary for turn ${completed.turn}`);
     }
 
     /* ------------------------------------------------------- after-turn notes */
@@ -13614,25 +13693,25 @@
         bubble.style.setProperty('--bubble-index', String(index));
         bubble.hidden = true;
         bubble.innerHTML = `
-          <button class="seat-bubble-toggle" type="button" aria-expanded="false" aria-controls="seatBubblePanel-${player.id}" aria-label="Read what ${player.name} did last turn">
+          <button class="seat-bubble-toggle" type="button" aria-expanded="false" aria-controls="seatBubblePanel-${player.id}" aria-label="${T`Read what ${player.name} did last turn`}">
             <svg class="seat-bubble-shape" viewBox="-6 -20 92 92" aria-hidden="true"><path d="${SEAT_BUBBLE_PATH}"/></svg>
             <span class="seat-bubble-mark" aria-hidden="true">i</span>
           </button>
-          <div class="seat-bubble-panel" id="seatBubblePanel-${player.id}" role="group" aria-label="${player.name}'s last turn" hidden>
+          <div class="seat-bubble-panel" id="seatBubblePanel-${player.id}" role="group" aria-label="${T`${player.name}'s last turn`}" hidden>
             <div class="seat-bubble-head">
               <span class="seat-bubble-who">
                 <span class="seat-bubble-name">${player.name}</span>
                 <span class="seat-bubble-role">${player.role}</span>
               </span>
               <span class="seat-bubble-turn" data-bubble-turn></span>
-              <button class="seat-bubble-close" type="button" aria-label="Close ${player.name}'s note">×</button>
+              <button class="seat-bubble-close" type="button" aria-label="${T`Close ${player.name}'s note`}">×</button>
             </div>
             <section class="seat-bubble-section">
-              <h4 data-bubble-speech-heading>What they say</h4>
+              <h4 data-bubble-speech-heading>${T`What they say`}</h4>
               <ul class="seat-bubble-lines seat-bubble-speech" data-bubble-speech></ul>
             </section>
             <section class="seat-bubble-section">
-              <h4 data-bubble-facts-heading>Trust and confidence</h4>
+              <h4 data-bubble-facts-heading>${T`Trust and confidence`}</h4>
               <ul class="seat-bubble-lines" data-bubble-lines></ul>
             </section>
           </div>`;
@@ -13736,26 +13815,29 @@
       // Display thresholds only; neither changes the planner or pledge prices.
       const likely=PLAYERS.filter(peer=>peer.id!==player.id && !plan.forecast.peers[peer.id].deceased
         && 1-plan.forecast.peers[peer.id].probabilities[0]>=.5)
-        .map(peer=>peer.id==='artist'?'you':peer.name);
-      const names=likely.length<2?likely.join(''):likely.slice(0,-1).join(', ')+' and '+likely.at(-1);
-      const expectation=likely.length?`Expects ${names} to contribute their special inputs.`:'Unsure who will join.';
+        .map(peer=>peer.id==='artist'?tr('you'):peer.name);
+      const names=likely.length<2?likely.join(''):likely.slice(0,-1).join(', ')+tr(' and ')+likely.at(-1);
+      const expectation=likely.length?T`Expects ${names} to contribute their special inputs.`:T`Unsure who will join.`;
       if(plan.commitment>0&&!likely.length)return [
-        `Unsure who will join, but sees enough potential in cooperation to contribute ${bubbleEnergy(plan.commitment)} voluntarily.`];
-      if(plan.commitment>0)return [expectation,
-        `Intends to ${likely.length?'join them with':'contribute'} ${bubbleEnergy(plan.commitment)} voluntarily.`];
+        T`Unsure who will join, but sees enough potential in cooperation to contribute ${bubbleEnergy(plan.commitment)} voluntarily.`];
+      if(plan.commitment>0)return [expectation,likely.length
+        ? T`Intends to join them with ${bubbleEnergy(plan.commitment)} voluntarily.`
+        : T`Intends to contribute ${bubbleEnergy(plan.commitment)} voluntarily.`];
       const home=plan.actions.find(a=>a.action===0);
       const positive=plan.actions.filter(a=>a.action>0).reduce((best,a)=>!best||a.value>best.value+1e-9?a:best,null);
       const close=home&&home.value>1e-9&&positive&&positive.value>=home.value-.1*Math.abs(home.value)-1e-9;
       return [expectation,close
-        ? `Considering ${likely.length?'joining them':'contributing'} with ${bubbleEnergy(positive.action)}, but still prefers autarky.`
-        : 'Plans to keep all energy in autarky.'];
+        ? (likely.length
+          ? T`Considering joining them with ${bubbleEnergy(positive.action)}, but still prefers autarky.`
+          : T`Considering contributing with ${bubbleEnergy(positive.action)}, but still prefers autarky.`)
+        : T`Plans to keep all energy in autarky.`];
     }
 
     function seatBubbleNotes(player, completed) {
       const death = completed.automataDeaths?.find(entry => entry.playerId === player.id);
       if (death) {
         return [
-          `<strong>${player.name}</strong> received only ${bubbleWellbeing(death.windowWellbeing)} across the last ${death.windowTurns} turns, below the ${bubbleWellbeing(death.minimumWellbeing)} needed to survive.`,
+          T`<strong>${player.name}</strong> received only ${bubbleWellbeing(death.windowWellbeing)} across the last ${death.windowTurns} turns, below the ${bubbleWellbeing(death.minimumWellbeing)} needed to survive.`,
           `${player.name} is out of play and can no longer contribute or accept pledges.`,
           `Without their help, the remaining players can produce less together.`
         ];
@@ -13990,31 +14072,31 @@
           bubble.hidden = true;
           return;
         }
-        bubble.querySelector('[data-bubble-turn]').textContent = `Turn ${completed.turn}`;
+        bubble.querySelector('[data-bubble-turn]').textContent = T`Turn ${completed.turn}`;
         const notes = seatBubbleNotes(player, completed);
-        bubble.querySelector('[data-bubble-speech-heading]').textContent = 'What happened';
-        bubble.querySelector('[data-bubble-facts-heading]').textContent = 'Thinking about next turn';
+        bubble.querySelector('[data-bubble-speech-heading]').textContent = T`What happened`;
+        bubble.querySelector('[data-bubble-facts-heading]').textContent = T`Thinking about next turn`;
         const row=completed.result.results[player.id];
         const paid=completed.prepaid?.[player.id]?.extraUnits||0;
         const total=completed.commitments[player.id]||0;
         const past=death?[notes[0]]:[
-          `Turn ${completed.turn}: ${bubbleEnergy(total)} to the table${paid?` (${paid} paid for)`:''}; ${bubbleEnergy(ENERGY_PER_TURN-total)} in autarky.`,
-          `Consumed ${bubbleWellbeing(row.total)}; saved ${fmt(row.reserveAfter)} goods.`
+          T`Turn ${completed.turn}: ${bubbleEnergy(total)} to the table${paid?T` (${paid} paid for)`:''}; ${bubbleEnergy(ENERGY_PER_TURN-total)} in autarky.`,
+          T`Consumed ${bubbleWellbeing(row.total)}; saved ${fmt(row.reserveAfter)} goods.`
         ];
         let future;
-        if(death)future=['Out of play; no further contributions or pledges.'];
+        if(death)future=[T`Out of play; no further contributions or pledges.`];
         else {
           const nextPlan=plannerFor(player,state.coordinationBeliefs[player.id]).diagnostics;
           future=nextTurnExpectationNotes(player,nextPlan);
-          if(nextPlan.neededNextTurn>0)future.push(`Needs to consume ${bubbleWellbeing(nextPlan.neededNextTurn)} this turn.`);
-          if(pledgeSurvivalNote(player))future.push('Pledges cost extra to guarantee survival if table production fails.');
+          if(nextPlan.neededNextTurn>0)future.push(T`Needs to consume ${bubbleWellbeing(nextPlan.neededNextTurn)} this turn.`);
+          if(pledgeSurvivalNote(player))future.push(T`Pledges cost extra to guarantee survival if table production fails.`);
         }
         bubble.querySelector('[data-bubble-speech]').innerHTML = past.map(note=>`<li>${note}</li>`).join('');
         bubble.querySelector('[data-bubble-lines]').innerHTML = future
           .map(note => `<li>${note}</li>`)
           .join('');
         bubble.querySelector('.seat-bubble-toggle')
-          .setAttribute('aria-label', `Read what ${player.name} did in turn ${completed.turn}`);
+          .setAttribute('aria-label', T`Read what ${player.name} did in turn ${completed.turn}`);
         bubble.hidden = false;
         if (fresh) {
           setSeatBubbleOpen(player.id, false);
@@ -14031,8 +14113,8 @@
       if (!middleIds.length) return;
 
       setStatus(
-        `<span class="num-energy">${middleIds.length}</span> unallocated ${ENERGY_ICON} move${middleIds.length === 1 ? 's' : ''} left`,
-        `Unallocated ${ENERGY_ICON} at Next turn is automatically used for autarky.`
+        T`<span class="num-energy">${middleIds.length}</span> unallocated ${ENERGY_ICON} move${middleIds.length === 1 ? 's' : ''} left`,
+        T`Unallocated ${ENERGY_ICON} at Next turn is automatically used for autarky.`
       );
       const flights = middleIds.map(tokenId => {
         const source = document.querySelector(`.allocation-token[data-token-id="${tokenId}"]`);
@@ -14083,8 +14165,8 @@
         return { tokenId, goodIndex, good: BLAND_GOODS[goodIndex] };
       });
       setStatus(
-        homeTokenIds.length === 1 ? '<span class="num-energy">1</span> autarky token makes a small good' : `<span class="num-energy">${homeTokenIds.length}</span> autarky tokens make small goods`,
-        `Home work yields ${selectedGoods.map(item => `<span class="good-highlight">${item.good.name}</span>`).join(', ')} — each worth <span class="num-wellbeing">1</span> ${WELLBEING_ICON}.`
+        homeTokenIds.length === 1 ? T`<span class="num-energy">1</span> autarky token makes a small good` : T`<span class="num-energy">${homeTokenIds.length}</span> autarky tokens make small goods`,
+        T`Home work yields ${selectedGoods.map(item => `<span class="good-highlight">${item.good.name}</span>`).join(', ')} — each worth <span class="num-wellbeing">1</span> ${WELLBEING_ICON}.`
       );
 
       const sources = selectedGoods.map(item => {
@@ -14131,8 +14213,8 @@
       await sleep(300);
 
       setStatus(
-        selectedGoods.length === 1 ? 'Your home good is set aside' : 'Your home goods are set aside',
-        'The modest goods move to the top of your card so you can inspect each one before the other choices are revealed.'
+        selectedGoods.length === 1 ? T`Your home good is set aside` : T`Your home goods are set aside`,
+        T`The modest goods move to the top of your card so you can inspect each one before the other choices are revealed.`
       );
       const shelfFlights = finishedGoods.map(({ tokenId, token }) => {
         const rect = token.getBoundingClientRect();
@@ -14198,7 +14280,7 @@
       $('#continueAction').hidden = true;
       button.hidden = false;
       button.disabled = true;
-      button.querySelector('span').textContent = 'Resolving turn…';
+      button.querySelector('span').textContent = T`Resolving turn…`;
       clearAllocationDrag();
       await settleUnallocatedAtHome(runGeneration);
       if (generation !== runGeneration) return;
@@ -14209,7 +14291,7 @@
       renderSeats();
       updateSummary();
       $('#tableShell').dataset.state = 'receiving';
-      setStatus(`${PLAYER_COUNT} choices are revealed`, `Committed ${ENERGY_ICON} is becoming a token in the color of each player’s specialization.`);
+      setStatus(T`${PLAYER_COUNT} choices are revealed`, T`Committed ${ENERGY_ICON} is becoming a token in the color of each player’s specialization.`);
       AUDIO.cue('reveal', { count: PLAYERS.filter(player => !isAutomatonDeceased(player.id)).length });
       await sleep(420);
       if (generation !== runGeneration) return;
@@ -14232,7 +14314,7 @@
       const pledgeSettlement = null;
 
       if (result.activeCount === 0) {
-        setStatus('The table stays empty', `Every player kept all <span class="num-energy">3</span> ${ENERGY_ICON} and made ${WELLBEING_ICON} independently.`);
+        setStatus(T`The table stays empty`, T`Every player kept all <span class="num-energy">3</span> ${ENERGY_ICON} and made ${WELLBEING_ICON} independently.`);
         AUDIO.cue('empty-table');
         await sleep(500);
       } else if (result.activeCount === 1) {
@@ -14262,12 +14344,12 @@
       if (result.activeCount >= 2) {
         setStatus(
           isMeagreRound(result)
-            ? `${result.outputCount} meagre goods completed`
-            : `${result.outputCount} common goods completed`,
-          `The shared rate was <span class="num-wellbeing">${fmt(result.rate)}</span>. Returns were divided in direct proportion to each player’s commitment.`
+            ? T`${result.outputCount} meagre goods completed`
+            : T`${result.outputCount} common goods completed`,
+          T`The shared rate was <span class="num-wellbeing">${fmt(result.rate)}</span>. Returns were divided in direct proportion to each player’s commitment.`
         );
       } else if (result.activeCount === 0) {
-        setStatus('Everyone worked alone', `Each player receives <span class="num-wellbeing">3</span> ${WELLBEING_ICON} from the ${ENERGY_ICON} they kept.`);
+        setStatus(T`Everyone worked alone`, T`Each player receives <span class="num-wellbeing">3</span> ${WELLBEING_ICON} from the ${ENERGY_ICON} they kept.`);
       }
       await sleep(220);
       if (generation !== runGeneration) return;
@@ -14287,9 +14369,9 @@
         closePledgeDesk();
         $('#primaryAction').hidden = false;
         $('#primaryAction').disabled = false;
-        $('#primaryAction').querySelector('span').textContent = 'Final standings';
-        $('#primaryAction').setAttribute('aria-label', 'View final standings');
-        setStatus('Mission accomplished', 'The hard way · Everyone is willing to contribute all their energy freely.');
+        $('#primaryAction').querySelector('span').textContent = T`Final standings`;
+        $('#primaryAction').setAttribute('aria-label', T`View final standings`);
+        setStatus(T`Mission accomplished`, T`The hard way · Everyone is willing to contribute all their energy freely.`);
         AUDIO.cue('victory', { players: PLAYERS.map(player => player.id) });
         showMissionVictory();
         return;
@@ -14321,11 +14403,11 @@
       const continueAction = $('#continueAction');
       continueAction.hidden = true;
       continueAction.disabled = false;
-      continueAction.querySelector('span').textContent = 'Continue';
+      continueAction.querySelector('span').textContent = T`Continue`;
       button.hidden = false;
       button.disabled = false;
-      button.querySelector('span').textContent = 'Next turn';
-      button.setAttribute('aria-label', `Commit this allocation, resolve turn ${state.turn}, and proceed to turn ${state.turn + 1}`);
+      button.querySelector('span').textContent = T`Next turn`;
+      button.setAttribute('aria-label', T`Commit this allocation, resolve turn ${state.turn}, and proceed to turn ${state.turn + 1}`);
       AUDIO.cue('turn-start');
     }
 
@@ -14344,13 +14426,11 @@
       continueAction.disabled = false;
       button.hidden = false;
       button.disabled = false;
-      button.querySelector('span').textContent = 'Restart';
-      button.setAttribute('aria-label', 'Restart the level from turn 1');
+      button.querySelector('span').textContent = T`Restart`;
+      button.setAttribute('aria-label', T`Restart the level from turn 1`);
       setStatus(
-        'Game Over',
-        `Over the last ${survival.windowTurns} turns, you consumed `
-          + `<span class="num-wellbeing">${fmt(survival.windowSum)}</span> ${WELLBEING_ICON} in total, `
-          + `below the minimum requirement of <span class="num-wellbeing">${fmt(survival.minimum)}</span> ${WELLBEING_ICON}.`
+        T`Game Over`,
+        T`Over the last ${survival.windowTurns} turns, you consumed <span class="num-wellbeing">${fmt(survival.windowSum)}</span> ${WELLBEING_ICON} in total, below the minimum requirement of <span class="num-wellbeing">${fmt(survival.minimum)}</span> ${WELLBEING_ICON}.`
       );
       fillDefeatDialog(survival);
       $('#defeatDialog').showModal();
@@ -14358,23 +14438,21 @@
 
     function fillDefeatDialog(survival) {
       // This breakdown alone uses hundredths to expose small consumption shortfalls.
-      const fmtDefeat = n => String(Math.round((Number(n) + Number.EPSILON) * 100) / 100);
+      const fmtDefeat = n => CWT_LANGUAGE.number(Math.round((Number(n) + Number.EPSILON) * 100) / 100);
       const gains = playerTurnGains();
       const from = Math.max(0, gains.length - survival.windowTurns);
-      $('#defeatLead').textContent = `Turn ${state.turn} · You failed to meet the minimum wellbeing requirement.`;
-      $('#defeatAccount').innerHTML = `You needed to consume at least <strong>${fmtDefeat(survival.minimum)}</strong> ${WELLBEING_ICON} `
-        + `over the last <strong>${survival.windowTurns}</strong> turn${survival.windowTurns === 1 ? '' : 's'}. `
-        + `You consumed only <strong>${fmtDefeat(survival.windowSum)}</strong>.`;
+      $('#defeatLead').textContent = T`Turn ${state.turn} · You failed to meet the minimum wellbeing requirement.`;
+      $('#defeatAccount').innerHTML = T`You needed to consume at least <strong>${fmtDefeat(survival.minimum)}</strong> ${WELLBEING_ICON} over the last <strong>${survival.windowTurns}</strong> turn${survival.windowTurns === 1 ? '' : 's'}. You consumed only <strong>${fmtDefeat(survival.windowSum)}</strong>.`;
       $('#defeatWindow').innerHTML = gains.slice(from).map((gain, index) => `
         <li class="defeat-window-row">
-          <span class="defeat-window-turn">Turn ${from + index + 1}</span>
+          <span class="defeat-window-turn">${T`Turn ${from + index + 1}`}</span>
           <span class="defeat-window-bar" style="--defeat-fill:${Math.min(100, Math.round(survival.perTurnFloor > 0 ? (gain / survival.perTurnFloor) * 100 : 0))}%" aria-hidden="true"><span></span></span>
           <span class="defeat-window-value"><span class="num-wellbeing">${fmtDefeat(gain)}</span>${WELLBEING_ICON}</span>
         </li>`).join('')
         + `<li class="defeat-window-row defeat-window-total">
-          <span class="defeat-window-turn">Together</span>
+          <span class="defeat-window-turn">${T`Together`}</span>
           <span class="defeat-window-bar" style="--defeat-fill:${Math.min(100, Math.round(survival.minimum > 0 ? (survival.windowSum / survival.minimum) * 100 : 0))}%" aria-hidden="true"><span></span></span>
-          <span class="defeat-window-value"><span class="num-wellbeing">${fmtDefeat(survival.windowSum)}</span>${WELLBEING_ICON} of ${fmtDefeat(survival.minimum)}</span>
+          <span class="defeat-window-value"><span class="num-wellbeing">${fmtDefeat(survival.windowSum)}</span>${WELLBEING_ICON}${T` of ${fmtDefeat(survival.minimum)}`}</span>
         </li>`;
     }
 
@@ -14429,7 +14507,7 @@
     }
 
     function resetGame(confirmReset = true) {
-      if (confirmReset && state.history.length && !window.confirm('Reset all turns and wellbeing totals?')) return;
+      if (confirmReset && state.history.length && !window.confirm(T`Reset all turns and wellbeing totals?`)) return;
       if (state.history.length) AUDIO.cue('reset');
       CommonWorksVictory.close();
       if ($('#defeatDialog').open) $('#defeatDialog').close();
@@ -14454,11 +14532,11 @@
       const continueAction = $('#continueAction');
       continueAction.hidden = true;
       continueAction.disabled = false;
-      continueAction.querySelector('span').textContent = 'Continue';
+      continueAction.querySelector('span').textContent = T`Continue`;
       button.hidden = false;
       button.disabled = false;
-      button.querySelector('span').textContent = 'Next turn';
-      button.setAttribute('aria-label', 'Commit this allocation, resolve this turn, and proceed to the next turn');
+      button.querySelector('span').textContent = T`Next turn`;
+      button.setAttribute('aria-label', T`Commit this allocation, resolve this turn, and proceed to the next turn`);
     }
 
     function isRecord(value) {
@@ -14914,11 +14992,11 @@
       const continueAction = $('#continueAction');
       continueAction.hidden = true;
       continueAction.disabled = false;
-      continueAction.querySelector('span').textContent = 'Continue';
+      continueAction.querySelector('span').textContent = T`Continue`;
       button.hidden = false;
       button.disabled = false;
-      button.querySelector('span').textContent = 'Next turn';
-      button.setAttribute('aria-label', `Commit this allocation, resolve turn ${state.turn}, and proceed to turn ${state.turn + 1}`);
+      button.querySelector('span').textContent = T`Next turn`;
+      button.setAttribute('aria-label', T`Commit this allocation, resolve turn ${state.turn}, and proceed to turn ${state.turn + 1}`);
       setStatus(`Turn ${state.turn} loaded`, `${state.history.length} completed turn${state.history.length === 1 ? '' : 's'} and the full audit trail were restored.`);
       adjustResponsiveClearance();
       /* A run saved under a gentler rule can already be over under the current
@@ -15335,13 +15413,13 @@
     function renderSoundControls(prefs = AUDIO.prefs()) {
       const silent = prefs.muted || (prefs.music === 0 && prefs.effects === 0);
       $('#soundButton').dataset.muted = String(silent);
-      $('#soundButton').setAttribute('aria-label', silent ? 'Sound is off. Open sound settings' : 'Open sound settings');
+      $('#soundButton').setAttribute('aria-label', silent ? T`Sound is off. Open sound settings` : T`Open sound settings`);
       $('#soundPanel').dataset.muted = String(prefs.muted);
       for (const [id, value] of [['soundMusic', prefs.music], ['soundEffects', prefs.effects]]) {
         $(`#${id}`).value = String(Math.round(value * 100));
         $(`#${id}Value`).textContent = `${Math.round(value * 100)}%`;
       }
-      $('#soundMute').textContent = prefs.muted ? 'Unmute' : 'Mute all';
+      $('#soundMute').textContent = prefs.muted ? T`Unmute` : T`Mute all`;
     }
 
     function setSoundPanelOpen(open) {
@@ -15422,7 +15500,7 @@
       }
       // The end of the paper counts as its last page, however tall the window.
       if (sheets.scrollTop + sheets.clientHeight >= sheets.scrollHeight - 2) reading = PAPER_PAGES.count;
-      $('#paperProgress').textContent = PAPER_PAGES.count ? `Page ${reading} of ${PAPER_PAGES.count}` : '';
+      $('#paperProgress').textContent = PAPER_PAGES.count ? T`Page ${reading} of ${PAPER_PAGES.count}` : '';
     }
     function openPaper() {
       const dialog = $('#paperDialog'), sheets = $('#paperPages');
@@ -15433,7 +15511,7 @@
           const page = `page-${String(index).padStart(2, '0')}`;
           const sheet = document.createElement('img');
           sheet.className = 'paper-page';
-          sheet.alt = `Page ${index} of the companion paper`;
+          sheet.alt = T`Page ${index} of the companion paper`;
           sheet.width = PAPER_PAGES.width;
           sheet.height = PAPER_PAGES.height;
           sheet.loading = 'lazy';
@@ -15506,6 +15584,16 @@
       if (confirmedInMenu(event.currentTarget)) quitGame();
     });
     $('#titleQuit').addEventListener('click', quitGame);
+    $('#languageToggle').addEventListener('click', () => CWT_LANGUAGE.choose(CWT_LANGUAGE.other));
+    /* The language button stands beside Quit, which is as wide as its
+       wording. Kept on <html>, which the UI editor never writes. */
+    function placeLanguageToggle() {
+      const width = $('#titleQuit').offsetWidth;
+      if (width) document.documentElement.style.setProperty('--quit-width', `${width}px`);
+    }
+    placeLanguageToggle();
+    addEventListener('resize', placeLanguageToggle, { passive: true });
+    document.fonts?.addEventListener('loadingdone', placeLanguageToggle);
     $('#farewellPlay').addEventListener('click', () => {
       AUDIO.configure({ enabled: true });
       showOpeningTitle();
@@ -15611,7 +15699,7 @@
       }];
       renderSeats();
     }
-    $('#primaryAction').setAttribute('aria-label', 'Commit this allocation, resolve this turn, and proceed to the next turn');
+    $('#primaryAction').setAttribute('aria-label', T`Commit this allocation, resolve this turn, and proceed to the next turn`);
 
     window.CWT = {
       constants: {

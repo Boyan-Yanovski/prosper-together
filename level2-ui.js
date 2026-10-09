@@ -7,7 +7,7 @@
     const columns=[];
     for(const [side,ids] of [['left',['mystic','craftsperson','healer']],['right',['farmer','scientist','organizer']]]) {
       const column=document.createElement('section');column.className='peer-column';column.dataset.side=side;
-      column.tabIndex=0;column.setAttribute('aria-label',`${side} players — scroll to see more`);
+      column.tabIndex=0;column.setAttribute('aria-label',side==='left'?T`left players — scroll to see more`:T`right players — scroll to see more`);
       host.append(column);columns.push(column);
       ids.forEach(id=>column.append(host.querySelector(`.seat[data-id="${id}"]`)));
       column.addEventListener('scroll',()=>{
