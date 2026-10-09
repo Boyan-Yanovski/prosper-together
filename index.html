@@ -17,8 +17,10 @@
   <!-- Which kind of device the game is on, read before anything is drawn.
        Phones and tablets get their own line on the first page, play in full
        screen where the browser allows it, and are asked to turn the screen
-       when the table is held upright. Computers get the page as it is. The
-       UI editor's Device choice (?device=…) shows the page as that device
+       when the table is held upright. A phone smaller than the one the
+       layouts are drawn for shows the same page drawn smaller (see "One size
+       for every phone" below). Computers get the page as it is. The UI
+       editor's Device choice (?device=…) shows the page as that device
        would. -->
   <script>
     (function () {
@@ -43,22 +45,63 @@
          Android phone shows it: a phone's layouts, as players get them, in a
          window of a phone's size. Full screen is only pretended there. */
       const query = new URLSearchParams(location.search);
+      /* One size for every phone. The phone layouts are drawn for a screen of
+         952 by 427 (a Pixel 9 Pro held sideways in full screen). A smaller
+         phone shows that same page, drawn smaller to fit its screen: every
+         word, card and gap keeps its place and its share of the screen, as
+         in a photograph of the larger phone.
+
+         The scale is the one at which the whole 952 by 427 fits the screen
+         (but never under six tenths: smaller than that nothing could be
+         read, and a very small screen gets a narrower page instead). Larger
+         phones, tablets and computers are left as they are. The scale is the
+         screen's, not the window's: the browser's own bars take the same
+         share of every phone's screen.
+
+         A screen less long for its height than that phone's (the older 16:9
+         phones) has room left over above and below. The phone layouts are
+         drawn for a page up to 440 tall, and on a taller one the cards at
+         the table grow into each other; so the page is given no more than
+         that, and the rest stays dark, as bands above and below it. */
+      const PHONE_PAGE = { long: 952, short: 427, tallest: 440 };
+      const pageScale = (width, height) => {
+        const long = Math.max(width, height), short = Math.min(width, height);
+        if (!(short > 0) || short >= 600) return 1;
+        const scale = Math.max(.6, Math.min(long / PHONE_PAGE.long, short / PHONE_PAGE.short));
+        return scale < .995 ? scale : 1;
+      };
+      /* This page in a frame of the page that draws it smaller (hostPhonePage,
+         below). That page knows what this one cannot see from inside a
+         frame: whether the game was opened from its icon, and the strips the
+         phone keeps clear of its camera. */
+      let host = null;
+      if (window.top !== window && query.get('frame') === 'page') {
+        try { host = window.parent.CWT_PAGE_HOST || null; } catch {}
+      }
+      if (host) {
+        installed = host.installed;
+        host.dress(root);
+      }
       const phonePreview = query.has('phone');
+      // The phone the preview stands for: its screen, WIDTHxHEIGHT.
+      let previewed = null;
       if (phonePreview) {
         root.dataset.phonePreview = '';
         // The preview's own window is not an installed game: it shows what a
         // phone's browser shows.
         installed = false;
-        /* The window takes the phone's size once (915×412, a phone held
+        /* The window takes the phone's size once (952×427, a phone held
            sideways, unless ?phone=WIDTHxHEIGHT); after that it is the
            viewer's to resize. A browser allows this only for a window of the
-           page's own, such as Chrome's --app. */
+           page's own, such as Chrome's --app. A smaller phone than 952×427
+           shows the page drawn smaller, as that phone does. */
+        const size = /^(\d{3,4})x(\d{3,4})$/.exec(query.get('phone')) || [null, PHONE_PAGE.long, PHONE_PAGE.short];
+        previewed = [Number(size[1]), Number(size[2])];
         let sized = false;
         try { sized = sessionStorage.getItem('common-works-table-v12.phone-sized') === '1'; } catch {}
         if (!sized && window.top === window) {
-          const size = /^(\d{3,4})x(\d{3,4})$/.exec(query.get('phone')) || [null, 915, 412];
           try {
-            resizeTo(outerWidth + Number(size[1]) - innerWidth, outerHeight + Number(size[2]) - innerHeight);
+            resizeTo(outerWidth + previewed[0] - innerWidth, outerHeight + previewed[1] - innerHeight);
             sessionStorage.setItem('common-works-table-v12.phone-sized', '1');
           } catch {}
         }
@@ -85,6 +128,99 @@
       // local network does not suggest it.
       if (!installed && window.isSecureContext && ['android', 'iphone', 'ipad'].includes(device)) {
         root.dataset.install = device === 'android' ? 'android' : 'apple';
+      }
+
+      /* A phone smaller than the one the layouts are drawn for. The browser
+         itself can draw a page smaller (the viewport line above), but Chrome
+         goes back to the screen's own size whenever a page is in full
+         screen, which is where the game is played. So this window keeps a
+         frame and nothing else: the frame is the size of the larger phone's
+         page and is drawn smaller to fit, and the game runs inside it, where
+         it finds a window of that size. Its media queries, vw and innerWidth
+         all read the frame, so nothing in the game has to know. Full screen,
+         the turned screen and the lit screen are asked of this window (see
+         fullscreenHost in the game's script). The editor's preview and test
+         runs are left as they are. */
+      const screenSize = () => previewed || [screen.width, screen.height];
+      const driven = query.has('author') || [...query.keys()].some(key => /test$/.test(key));
+      if (window.top === window && !driven && pageScale(...screenSize()) < 1) hostPhonePage();
+
+      function hostPhonePage() {
+        root.dataset.pageHost = '';
+        /* Nothing below this script is this window's. Read as plain text, the
+           rest of the file is neither drawn, loaded nor run here. */
+        document.write('<plaintext hidden>');
+        root.style.cssText = 'height:100%;overflow:hidden;overscroll-behavior:none;background:#0c1b17';
+        document.body.style.cssText = 'height:100%;margin:0;overflow:hidden;background:#0c1b17';
+        // The strips the phone keeps clear, as the browser gives them to this window.
+        const strips = document.createElement('div');
+        strips.style.cssText = 'position:fixed;top:0;left:0;visibility:hidden;pointer-events:none;'
+          + 'padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';
+        const frame = document.createElement('iframe');
+        frame.title = document.title;
+        frame.allow = 'fullscreen; autoplay; screen-wake-lock';
+        frame.style.cssText = 'position:fixed;top:0;left:0;border:0;transform-origin:0 0';
+        /* Where the frame stands in this window and how much smaller it is
+           drawn, each way (the two differ by the rounding of the page to
+           whole pixels, less than a thousandth). */
+        const drawn = { left: 0, top: 0, right: 0, bottom: 0, across: 1, down: 1 };
+        /* The strips in the framed page's own pixels: what is left of each
+           beyond the frame's edge, and wider than in the screen's pixels by
+           as much as the page is drawn smaller. */
+        const dress = page => {
+          const given = getComputedStyle(strips);
+          for (const side of ['Top', 'Right', 'Bottom', 'Left']) {
+            const name = side.toLowerCase();
+            const strip = Math.max(0, (parseFloat(given[`padding${side}`]) || 0) - drawn[name]);
+            page.style.setProperty(`--safe-${name}`, `${(strip / (name === 'left' || name === 'right' ? drawn.across : drawn.down)).toFixed(2)}px`);
+          }
+        };
+        /* The frame is a whole number of its own pixels each way and fills
+           this window, except that its shorter side is no more than the phone
+           layouts are drawn for: there it stands in the middle. Read again
+           whenever the window changes: the screen turned, full screen
+           entered or left, a folding phone opened. */
+        const fit = () => {
+          const scale = pageScale(...screenSize());
+          const wide = root.clientWidth, high = root.clientHeight;
+          let width = Math.round(wide / scale), height = Math.round(high / scale);
+          if (!width || !height) return;
+          drawn.across = wide / width;
+          drawn.down = high / height;
+          if (width > height && height > PHONE_PAGE.tallest) {
+            height = PHONE_PAGE.tallest;
+            drawn.down = drawn.across;
+          } else if (height >= width && width > PHONE_PAGE.tallest) {
+            width = PHONE_PAGE.tallest;
+            drawn.across = drawn.down;
+          }
+          drawn.left = drawn.right = (wide - width * drawn.across) / 2;
+          drawn.top = drawn.bottom = (high - height * drawn.down) / 2;
+          frame.style.left = `${drawn.left}px`;
+          frame.style.top = `${drawn.top}px`;
+          frame.style.width = `${width}px`;
+          frame.style.height = `${height}px`;
+          frame.style.transform = `scale(${drawn.across}, ${drawn.down})`;
+          let page = null;
+          try { page = frame.contentDocument?.documentElement; } catch {}
+          if (page) dress(page);
+        };
+        window.CWT_PAGE_HOST = { dress, installed };
+        document.body.append(strips, frame);
+        fit();
+        /* Once more a moment after the window has changed: a browser may
+           give the new strips a little after the new size. */
+        let settled = 0;
+        addEventListener('resize', () => {
+          fit();
+          clearTimeout(settled);
+          settled = setTimeout(fit, 400);
+        }, { passive: true });
+        // (The strips are all padding: it is their outer box that changes.)
+        if (window.ResizeObserver) new ResizeObserver(fit).observe(strips, { box: 'border-box' });
+        const address = new URL(location.href);
+        address.searchParams.set('frame', 'page');
+        frame.src = address.href;
       }
     }());
   </script>
@@ -126,11 +262,22 @@
       --artist: #b75b49;
       --craftsperson: #a66e39;
       --ease: cubic-bezier(.2, .75, .2, 1);
+      /* The strips a phone keeps clear of its camera, its corners and its
+         own bars. A browser gives them to a window, not to a frame: a page
+         drawn smaller in a frame (hostPhonePage, in <head>) is given them by
+         the page around it, in its own pixels, on <html> itself. */
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
     }
 
     * { box-sizing: border-box; }
 
-    html { min-width: 320px; background: var(--paper); }
+    /* Text keeps the size the page gives it. A phone's browser may otherwise
+       enlarge some of it (an iPhone held sideways does), and every phone is
+       to show the same page. */
+    html { min-width: 320px; background: var(--paper); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
     body {
       min-height: 100vh;
@@ -3032,9 +3179,9 @@
       .seat-south {
         position: fixed;
         z-index: 30;
-        right: max(13px, env(safe-area-inset-right));
-        bottom: max(8px, env(safe-area-inset-bottom));
-        left: max(13px, env(safe-area-inset-left));
+        right: max(13px, var(--safe-right));
+        bottom: max(8px, var(--safe-bottom));
+        left: max(13px, var(--safe-left));
         width: auto;
         min-width: 0;
         transform: none;
@@ -4903,7 +5050,7 @@
         min-height: 45px;
         gap: 6px;
         margin: 0;
-        padding: 5px max(7px, env(safe-area-inset-right)) 10px max(7px, env(safe-area-inset-left));
+        padding: 5px max(7px, var(--safe-right)) 10px max(7px, var(--safe-left));
         background: linear-gradient(180deg, rgba(10,14,12,.9), rgba(10,14,12,.42) 74%, transparent);
       }
       /* On an Android phone the bar runs from edge to edge, like the cards under it (see .seat-nw). */
@@ -5107,11 +5254,11 @@
       .seat-nw,
       .seat-ne { top: 48px; }
       .seat-sw,
-      .seat-se { bottom: max(5px, env(safe-area-inset-bottom)); }
+      .seat-se { bottom: max(5px, var(--safe-bottom)); }
       .seat-nw,
-      .seat-sw { left: max(5px, env(safe-area-inset-left)); }
+      .seat-sw { left: max(5px, var(--safe-left)); }
       .seat-ne,
-      .seat-se { right: max(5px, env(safe-area-inset-right)); }
+      .seat-se { right: max(5px, var(--safe-right)); }
       /* An Android phone held sideways has its camera at one side, and
          reports the whole strip the camera stands in (about 50 px, for a
          camera a few millimetres across) as a safe area on that side only.
@@ -5132,7 +5279,7 @@
         --card-basis: min(calc(460px + var(--vitals-space, 0px)), calc(100% - 10px));
         position: absolute;
         right: auto;
-        bottom: max(4px, env(safe-area-inset-bottom));
+        bottom: max(4px, var(--safe-bottom));
         left: calc(50% - var(--card-basis) / 2 + var(--vitals-shift, 0px) / 2);
         width: var(--card-basis);
         min-width: 0;
@@ -5382,7 +5529,7 @@
         inset: 0;
         display: grid;
         overflow: auto;
-        padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+        padding: max(10px, var(--safe-top)) max(10px, var(--safe-right)) max(10px, var(--safe-bottom)) max(10px, var(--safe-left));
         place-items: center;
         background:
           radial-gradient(ellipse at 50% 44%, rgba(6,26,21,.3), rgba(2,9,7,.84) 84%),
@@ -7424,10 +7571,10 @@
         max-height: none;
         align-self: stretch;
         padding:
-          max(var(--stage-edge-y), calc(env(safe-area-inset-top) + 12px))
-          max(var(--stage-edge-x), calc(env(safe-area-inset-right) + 14px))
-          max(var(--stage-edge-y), calc(env(safe-area-inset-bottom) + 12px))
-          max(var(--stage-edge-x), calc(env(safe-area-inset-left) + 14px));
+          max(var(--stage-edge-y), calc(var(--safe-top) + 12px))
+          max(var(--stage-edge-x), calc(var(--safe-right) + 14px))
+          max(var(--stage-edge-y), calc(var(--safe-bottom) + 12px))
+          max(var(--stage-edge-x), calc(var(--safe-left) + 14px));
         border: 0;
         border-radius: 0;
         background:
@@ -7437,7 +7584,7 @@
         box-shadow: inset 0 0 140px rgba(0,0,0,.34);
       }
       .opening-stage:not(.opening-stage--title)::before {
-        inset: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+        inset: max(8px, var(--safe-top)) max(8px, var(--safe-right)) max(8px, var(--safe-bottom)) max(8px, var(--safe-left));
         border-radius: 12px;
       }
       /* On a very wide screen the lines would grow too long to follow. */
@@ -7557,6 +7704,13 @@
       @media (orientation: portrait) {
         #openingRules[data-paging="card"] .opening-rule > .opening-rule-visual { zoom: var(--guide-picture-zoom, 1); }
       }
+      /* While the card and the meter are being measured (measuringGuide), a
+         new size is in place at once. For a player who has asked for less
+         motion every change of style is otherwise made a frame late, by a
+         transition too short to see, and the measure would read the old
+         size. */
+      html[data-measuring] #openingRules .opening-rule,
+      html[data-measuring] #openingRules .survival-gauge { transition: none !important; }
       /* A phone held sideways is short: the example ledger closes up so it
          fits its card. */
       @media (orientation: landscape) and (max-height: 440px) {
@@ -8592,7 +8746,7 @@
       inset: 0;
       z-index: 2147483000;
       display: none;
-      padding: max(24px, env(safe-area-inset-top)) 22px max(24px, env(safe-area-inset-bottom));
+      padding: max(24px, var(--safe-top)) 22px max(24px, var(--safe-bottom));
       place-items: center;
       background:
         radial-gradient(closest-side, rgba(7,22,18,.5), transparent),
@@ -8778,7 +8932,7 @@
        place and the sheets scroll under it. */
     #paperDialog {
       width: min(1040px, calc(100% - 24px));
-      width: min(1040px, calc(100% - 24px - 2 * max(env(safe-area-inset-left), env(safe-area-inset-right))));
+      width: min(1040px, calc(100% - 24px - 2 * max(var(--safe-left), var(--safe-right))));
       height: calc(100vh - 24px);
       height: calc(100svh - 24px);
       max-height: none;
@@ -8858,7 +9012,7 @@
     @media (orientation: landscape) and (max-height: 480px) {
       #paperDialog {
         width: calc(100% - 12px);
-        width: calc(100% - 12px - 2 * max(env(safe-area-inset-left), env(safe-area-inset-right)));
+        width: calc(100% - 12px - 2 * max(var(--safe-left), var(--safe-right)));
         max-width: none;
         height: calc(100vh - 12px);
         height: calc(100svh - 12px);
@@ -8873,8 +9027,8 @@
     /* The way out on the screens without a toolbar, in their top right
        corner. They scroll away with the screen where it scrolls. */
     .opening-flow {
-      --tools-top: max(clamp(8px, 2svh, 20px), calc(env(safe-area-inset-top) + 6px));
-      --tools-right: max(clamp(12px, 2.2vw, 34px), calc(env(safe-area-inset-right) + 8px));
+      --tools-top: max(clamp(8px, 2svh, 20px), calc(var(--safe-top) + 6px));
+      --tools-right: max(clamp(12px, 2.2vw, 34px), calc(var(--safe-right) + 8px));
     }
     /* After the first page: the table's own frame of tools, with its menu. */
     .opening-tools {
@@ -8978,7 +9132,7 @@
     /* A phone held sideways: the title begins close to the top, so the tab
        is cut smaller and sits higher. */
     @media (max-height: 380px) {
-      .opening-quit { top: max(5px, env(safe-area-inset-top)); min-height: 29px; padding: 0 12px 0 4px; gap: 7px; font-size: .76rem; }
+      .opening-quit { top: max(5px, var(--safe-top)); min-height: 29px; padding: 0 12px 0 4px; gap: 7px; font-size: .76rem; }
       .opening-quit svg { width: 21px; height: 21px; padding: 4px; }
     }
     @media (prefers-reduced-motion: no-preference) {
@@ -9024,7 +9178,7 @@
     /* A finger-sized target around the stud. */
     .opening-language::after { position: absolute; inset: -6px -5px -8px -6px; content: ""; }
     @media (max-height: 380px) {
-      .opening-language { top: max(5px, env(safe-area-inset-top)); width: 29px; height: 29px; }
+      .opening-language { top: max(5px, var(--safe-top)); width: 29px; height: 29px; }
       .opening-language svg { width: 20px; height: 20px; }
     }
     @media (prefers-reduced-motion: no-preference) {
@@ -9037,10 +9191,10 @@
        It stays clear of a phone's camera cut-out, as the page itself does. */
     .level-frame {
       position: fixed;
-      inset: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      inset: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
       z-index: 2147483600;
-      width: calc(100% - env(safe-area-inset-left) - env(safe-area-inset-right));
-      height: calc(100% - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      width: calc(100% - var(--safe-left) - var(--safe-right));
+      height: calc(100% - var(--safe-top) - var(--safe-bottom));
       border: 0;
       background: #10251f;
       opacity: 0;
@@ -9061,7 +9215,7 @@
        home screen's second heading begins at the middle of a phone's screen. */
     .opening-fullscreen {
       position: fixed;
-      top: max(3px, env(safe-area-inset-top));
+      top: max(3px, var(--safe-top));
       left: 30%;
       z-index: 6;
       display: none;
@@ -10084,7 +10238,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.14.0-awake';
+    const APP_VERSION = '12.15.0-onesize';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
@@ -10469,11 +10623,23 @@
     /* A level opened inside the page of another, so that full screen goes on
        (see openLevelInFrame). It is played like any page of its own. */
     const IN_LEVEL_FRAME = window.top !== window && TEST_PARAMS.get('frame') === 'level';
+    /* The whole game in a frame, on a phone that draws the page smaller (see
+       hostPhonePage in <head>). The window around it holds nothing but the
+       frame, so the game is played as on a page of its own, levels and all;
+       only what belongs to a window (full screen, closing it, its title) is
+       asked of that window. */
+    const IN_PAGE_FRAME = window.top !== window && TEST_PARAMS.get('frame') === 'page';
+    if (IN_PAGE_FRAME) {
+      try {
+        window.parent.document.title = document.title;
+        window.parent.document.documentElement.lang = document.documentElement.lang;
+      } catch { /* the window keeps its own */ }
+    }
     /* Sound and music (game-audio.js). Silent in test runs and in the
        editor's preview (a frame), where the page is driven rather than played. */
     const AUDIO = window.CommonWorksAudio;
     AUDIO.configure({
-      enabled: !TEST_PARAMS.has('author') && (window.top === window || IN_LEVEL_FRAME) && (!IS_TEST_RUN || TEST_PARAMS.has('audiotest')),
+      enabled: !TEST_PARAMS.has('author') && (window.top === window || IN_LEVEL_FRAME || IN_PAGE_FRAME) && (!IS_TEST_RUN || TEST_PARAMS.has('audiotest')),
       storageKey: IS_TEST_RUN ? 'common-works-table-v11.test-audio' : 'common-works-table-v11.audio'
     });
     /* Read afresh at every animation site rather than captured, so the one
@@ -10534,12 +10700,43 @@
        allows: a card needs about 700 by 215 of its own units to hold what it
        holds on a computer. Kept on <html>, which the UI editor never writes. */
     function sizeGuideCard() {
-      const zoom = Math.max(1, Math.min(1.4, innerWidth / 700, (innerHeight - 110) / 215));
-      document.documentElement.style.setProperty('--guide-card-zoom', zoom.toFixed(3));
+      const root = document.documentElement;
+      let zoom = Math.max(1, Math.min(1.4, innerWidth / 700, (innerHeight - 110) / 215));
+      root.style.setProperty('--guide-card-zoom', zoom.toFixed(3));
       /* Held upright, a phone is narrower than the pictures were drawn (about
          420 wide): they are drawn smaller, whole, rather than cut off. */
       const picture = Math.max(.6, Math.min(1, (innerWidth - 66) / 420));
-      document.documentElement.style.setProperty('--guide-picture-zoom', picture.toFixed(3));
+      root.style.setProperty('--guide-picture-zoom', picture.toFixed(3));
+      /* The words have the last say. That estimate is a little generous for
+         the cards with the most words, more so in German. Where the card
+         showing would have its words scrolled in their column, or a note's
+         words run out of its box, the whole card is drawn a step smaller
+         until they fit: the card whole, so its words and its picture keep
+         their proportions. */
+      const card = document.querySelector('#openingRules[data-paging="card"] .opening-rule:not([hidden])');
+      if (!card || !matchMedia('(orientation: landscape)').matches) return;
+      const held = [...card.querySelectorAll(':scope > p, :scope > .guide-survival-copy, .opening-mini-note')];
+      const cramped = () => held.some(part => part.scrollHeight > part.clientHeight + 1);
+      measuringGuide(() => {
+        for (const least = Math.max(.85, zoom - .3); zoom > least && cramped();) {
+          zoom -= .02;
+          root.style.setProperty('--guide-card-zoom', zoom.toFixed(3));
+        }
+      });
+    }
+
+    /* The guide's sizes are measured as they are set, so each has to be in
+       place when it is read (see html[data-measuring] in the styles). The
+       last one is settled before changes go back to being as they were. */
+    function measuringGuide(measure) {
+      const root = document.documentElement;
+      root.setAttribute('data-measuring', '');
+      try {
+        measure();
+      } finally {
+        void root.offsetHeight;
+        root.removeAttribute('data-measuring');
+      }
     }
 
     /* The survival card's meters fill the room their panels have: measured at
@@ -10548,13 +10745,15 @@
       const root = document.documentElement;
       const gauge = document.querySelector('#openingRules[data-paging="card"] .opening-rule:not([hidden]) .guide-survival-case .survival-gauge');
       if (!gauge) return;
-      root.style.setProperty('--guide-gauge-zoom', '1');
-      const panel = gauge.closest('.guide-survival-case');
-      const above = panel.querySelector('.guide-survival-case-title').getBoundingClientRect().bottom;
-      const below = panel.querySelector('.guide-survival-pool').getBoundingClientRect().top;
-      const plain = gauge.getBoundingClientRect().height;
-      const zoom = plain > 0 ? Math.max(1, Math.min(2.6, .69 * (below - above) / plain)) : 1.7;
-      root.style.setProperty('--guide-gauge-zoom', zoom.toFixed(3));
+      measuringGuide(() => {
+        root.style.setProperty('--guide-gauge-zoom', '1');
+        const panel = gauge.closest('.guide-survival-case');
+        const above = panel.querySelector('.guide-survival-case-title').getBoundingClientRect().bottom;
+        const below = panel.querySelector('.guide-survival-pool').getBoundingClientRect().top;
+        const plain = gauge.getBoundingClientRect().height;
+        const zoom = plain > 0 ? Math.max(1, Math.min(2.6, .69 * (below - above) / plain)) : 1.7;
+        root.style.setProperty('--guide-gauge-zoom', zoom.toFixed(3));
+      });
     }
 
     function turnGuidePage(step) {
@@ -10665,14 +10864,17 @@
       const rules = $('#openingRules');
       rules.dataset.slide = String(openingRuleSlide);
       rules.dataset.paging = oneCard ? 'card' : 'slide';
-      if (oneCard) sizeGuideCard();
       rules.setAttribute('aria-label', T`Core rules, slide ${openingRuleSlide + 1} of ${OPENING_RULE_SLIDE_COUNT}`);
       document.querySelectorAll('.opening-rule[data-opening-slide]').forEach(rule => {
         rule.hidden = Number(rule.dataset.openingSlide) !== openingRuleSlide
           || (oneCard && slideCards.indexOf(rule) !== openingRuleCard);
       });
       rules.dataset.cards = String(document.querySelectorAll('.opening-rule:not([hidden])').length);
-      if (oneCard) fitGuideGauge();
+      // Sized once the page's card is the one showing: its words are measured.
+      if (oneCard) {
+        sizeGuideCard();
+        fitGuideGauge();
+      }
       document.querySelectorAll('.opening-guide-title[data-opening-slide]').forEach(title => {
         title.hidden = Number(title.dataset.openingSlide) !== openingRuleSlide;
       });
@@ -10700,9 +10902,10 @@
        again. Computers, the editor's preview and test runs are left alone. */
 
     // The page that holds full screen: this one, or for a level opened in a
-    // frame, the page around it (where the browser lets the frame reach it).
+    // frame and for the game drawn smaller in a frame, the page around it
+    // (where the browser lets the frame reach it).
     function fullscreenHost() {
-      if (!IN_LEVEL_FRAME) return window;
+      if (!IN_LEVEL_FRAME && !IN_PAGE_FRAME) return window;
       try {
         return window.parent.document ? window.parent : window;
       } catch {
@@ -10727,7 +10930,7 @@
     function mayGoFullscreen() {
       return 'fullscreenAble' in document.documentElement.dataset
         && !TEST_PARAMS.has('author')
-        && (window.top === window || IN_LEVEL_FRAME);
+        && (window.top === window || IN_LEVEL_FRAME || IN_PAGE_FRAME);
     }
 
     function goFullscreenSideways() {
@@ -10767,13 +10970,15 @@
        each time full screen is noted (noteFullscreen: on entering it, and on
        coming back to the page). Where the browser has no such request (a
        plain-http address), or refuses it (a battery saver), the phone keeps
-       its own timing. A level in a frame leaves this to the page around it;
-       the editor's preview and the phone preview on a computer ask nothing. */
+       its own timing. A level in a frame leaves this to the page around it
+       (the game drawn smaller in a frame has only an empty page around it,
+       and asks for itself); the editor's preview and the phone preview on a
+       computer ask nothing. */
     let screenHeld = null;     // the browser's hold on the screen, while it has one
     let screenAsked = false;   // a request is on its way
 
     function screenShouldStayOn() {
-      if (document.hidden || window.top !== window || TEST_PARAMS.has('author') || PHONE_PREVIEW) return false;
+      if (document.hidden || (window.top !== window && !IN_PAGE_FRAME) || TEST_PARAMS.has('author') || PHONE_PREVIEW) return false;
       return inFullscreen() || 'installed' in document.documentElement.dataset;
     }
 
@@ -10851,6 +11056,15 @@
       };
       hostDocument.addEventListener('fullscreenchange', changed);
       hostDocument.addEventListener('webkitfullscreenchange', changed);
+      /* In a frame, the page around it outlives this one (the other level
+         loads in the frame, or the language changes): it is not left
+         listening for a page that has gone. */
+      if (hostDocument !== document) {
+        addEventListener('pagehide', () => {
+          hostDocument.removeEventListener('fullscreenchange', changed);
+          hostDocument.removeEventListener('webkitfullscreenchange', changed);
+        }, { once: true });
+      }
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
           // In full screen at this moment, or thrown out of it by leaving.
@@ -10986,7 +11200,8 @@
        an installed game, or a tab with no page to go back to. So the game
        asks, and where the window is still there a moment later, the game is
        put away behind a last page that says the window can be closed. A
-       level in a frame asks the page around it, whose window it is. */
+       level in a frame asks the page around it, whose window it is; the
+       game drawn smaller in a frame closes the window it is drawn in. */
     function quitGame() {
       if (IN_LEVEL_FRAME) {
         try {
@@ -10997,8 +11212,9 @@
       setOpeningMenuOpen(false);
       AUDIO.configure({ enabled: false });
       leaveFullscreen();
-      window.close();
-      setTimeout(() => { if (!window.closed) showFarewell(); }, 200);
+      const own = IN_PAGE_FRAME ? fullscreenHost() : window;
+      own.close();
+      setTimeout(() => { if (!own.closed) showFarewell(); }, 200);
     }
     window.quitGame = quitGame;
 
@@ -11062,7 +11278,8 @@
       renderLearningGuideCard();
       renderPledgePriceGuideCard();
       const app = $('#gameApp');
-      const showFlow = [...TEST_PARAMS.keys()].every(key => key === 'dev' || key === 'phone' || key === 'lang')
+      // (frame: the game drawn smaller in a frame opens as any page does.)
+      const showFlow = [...TEST_PARAMS.keys()].every(key => key === 'dev' || key === 'phone' || key === 'lang' || (key === 'frame' && IN_PAGE_FRAME))
         || TEST_PARAMS.has('intropreview')
         || TEST_PARAMS.has('guidepreview')
         || TEST_PARAMS.has('levelpreview');
@@ -11105,6 +11322,9 @@
         if (TEST_PARAMS.has('phone')) url.searchParams.set('phone', TEST_PARAMS.get('phone'));
         CWT_LANGUAGE.carry(url);
         if (IN_LEVEL_FRAME) url.searchParams.set('frame', 'level');
+        // Drawn smaller in a frame, the other level loads in that frame: the
+        // window around it stays as it is, full screen included.
+        if (IN_PAGE_FRAME) url.searchParams.set('frame', 'page');
         if (inFullscreen() && window.top === window && !PHONE_PREVIEW) openLevelInFrame(url);
         else location.href = url.href;
       });
@@ -15730,12 +15950,15 @@
     buildSettingsControls();
     updateSummary();
     initializeOpeningFlow();
-    /* Seat widths and the room kept around the player's card are measured
-       from text. They are measured again whenever a bundled font arrives
-       (game-fonts.css), in case the first measure was taken before it had. */
+    /* Seat widths, the room kept around the player's card and the size of
+       the guide's card are measured from text. They are measured again
+       whenever a bundled font arrives (game-fonts.css), in case the first
+       measure was taken before it had. */
     document.fonts?.addEventListener('loadingdone', () => {
       renderSeats();
       adjustResponsiveClearance();
+      sizeGuideCard();
+      fitGuideGauge();
     });
     /* The music plays from the opening screen on: at once where the browser
        allows sound on load, otherwise from the first click or key press —
