@@ -5042,6 +5042,14 @@
         overflow: hidden;
       }
       body { overscroll-behavior: none; }
+      /* On a phone or tablet nothing at the table scrolls with the page, so a
+         finger dragged across it is not the start of a scroll. The page does
+         not give under it (a browser stretches a page pulled past its end,
+         and reads whether it may from <html>, not <body>), and the browser
+         does not take the finger away from the game. Panels that scroll by
+         themselves keep their scrolling; two fingers still zoom. */
+      html[data-handheld] { overscroll-behavior: none; }
+      html[data-handheld] #gameApp { touch-action: pinch-zoom; }
 
       .topbar {
         position: absolute;
@@ -10239,7 +10247,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.15.1-strip';
+    const APP_VERSION = '12.15.2-touch';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
