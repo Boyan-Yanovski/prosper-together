@@ -2,12 +2,14 @@
 
    The page is written in English: its markup and the game's scripts hold the
    English text. Another language lies beside it in a file of its own (German:
-   game-language-de.js) and is laid over the English as the page loads, before
-   the game's own script reads the page. So changing the language reloads the
-   page; the choice is kept in this browser.
+   game-language-de.js, Bulgarian: game-language-bg.js) and is laid over the
+   English as the page loads, before the game's own script reads the page. So
+   changing the language reloads the page; the choice is kept in this browser.
 
-   A translation has five parts:
+   A translation has these parts:
      title        the name on the browser's tab.
+     decimal      the mark its numbers are written with, where it is not the
+                  full stop (',' for 1,5).
      page         the markup's own text, by element: its data-ui-key, or #id.
                   An element's child elements (an icon, a figure the game
                   fills in, a highlighted word) keep their place as {0}, {1},
@@ -19,7 +21,9 @@
      text         what the scripts write as the game runs, by its English,
                   with {} wherever a value is put in. The translation names
                   the values {0}, {1}, …, or is a function of them where the
-                  wording depends on a number.
+                  wording depends on a number. The players' names are here
+                  too, by their English: each language gives the players
+                  names of its own.
 
    The scripts mark their text with T (a template: T`Turn ${n}`) or tr (a
    plain string: tr(player.role)). In English both give the text back as it
@@ -27,14 +31,21 @@
 
    The UI editor edits whichever language its preview shows. English is
    written into the page; another language's page and styles parts are
-   written into its file (see ui-editor/editor.js and language_source.py). */
+   written into its file (see ui-editor/editor.js and language_source.py).
+
+   A new language needs: its code in LANGUAGES and its own name in NAMES
+   below, its file loaded by the page, a flag in the page's language button
+   (#languageChoice), and a line each in language_source.py and
+   ui-editor/editor.js. */
 (function () {
   const STORAGE_KEY = 'common-works-table-v12.language';
   /* The editor's preview has a choice of its own, kept only as long as the
      editor's tab: the editor opens on the page as it is written, whatever
      language the game was last played in. */
   const EDITOR_KEY = 'common-works-table-v12.editor-language';
-  const LANGUAGES = ['en', 'de'];
+  const LANGUAGES = ['en', 'de', 'bg'];
+  // Each language by its own name, as the language button offers it.
+  const NAMES = { en: 'English', de: 'Deutsch', bg: 'Български' };
   const root = document.documentElement;
   const query = new URLSearchParams(location.search);
   const named = LANGUAGES.includes(query.get('lang')) ? query.get('lang') : null;
@@ -79,8 +90,8 @@
     return english;
   }
 
-  // 1.5 is written 1,5 in German.
-  const number = text => (language === 'de' ? String(text).replace('.', ',') : String(text));
+  // 1.5 is written 1,5 in German and in Bulgarian.
+  const number = text => (translation()?.decimal === ',' ? String(text).replace('.', ',') : String(text));
 
   const nameOf = element => element.dataset.uiKey || (element.id ? `#${element.id}` : '');
 
@@ -140,9 +151,15 @@
   addEventListener('DOMContentLoaded', () => { delete root.dataset.languagePending; });
 
   /* The choice is kept in this browser. Where the browser keeps nothing
-     (private windows, blocked storage) it rides in the address instead. */
-  function choose(next) {
-    if (!LANGUAGES.includes(next) || next === language || (testing && !named)) return;
+     (private windows, blocked storage) it rides in the address instead.
+
+     The page then loads again in the new language. It opens on its first
+     page, unless the choice was made on the home screen (at: 'home'), where
+     the player has already gone in: then it opens there. The page that asks
+     may load the address itself (open), as it does in full screen, which a
+     page loading in its window would end. */
+  function choose(next, { at = '', open = null } = {}) {
+    if (!LANGUAGES.includes(next) || next === language || (testing && !named)) return false;
     let stored = false;
     try {
       keep(next);
@@ -151,8 +168,12 @@
     const address = new URL(location.href);
     if (stored) address.searchParams.delete('lang');
     else address.searchParams.set('lang', next);
+    if (at) address.searchParams.set('at', at);
+    else address.searchParams.delete('at');
+    if (open?.(address)) return true;
     if (address.href === location.href) location.reload();
     else location.replace(address.href);
+    return true;
   }
 
   /* A level opened at an address of its own speaks the language this page
@@ -166,8 +187,8 @@
 
   window.CWT_LANGUAGE = {
     current: language,
-    other: LANGUAGES[(LANGUAGES.indexOf(language) + 1) % LANGUAGES.length],
     languages: LANGUAGES,
+    names: NAMES,
     editorKey: EDITOR_KEY,
     choose, carry, translatePage, number, missing
   };

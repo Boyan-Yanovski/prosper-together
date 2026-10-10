@@ -5088,8 +5088,9 @@
         text-overflow: ellipsis;
         white-space: nowrap;
       }
-      /* German runs a little longer: set a touch smaller, the series' question still ends with its own words. */
+      /* German and Bulgarian run a little longer: set a touch smaller, the series' question still ends with its own words. */
       html[lang="de"] .topbar .eyebrow { font-size: clamp(.47rem, .775vw, .64rem); }
+      html[lang="bg"] .topbar .eyebrow { font-size: clamp(.44rem, .73vw, .6rem); }
 
       .header-turn-counter {
         grid-column: 2;
@@ -8038,6 +8039,11 @@
        needed this turn and what is in reserve. */
     .seat.seat-you .seat-head .seat-name-line { align-items: baseline; gap: 7px; }
     .seat.seat-you .seat-head .seat-name-line .seat-role { margin: 0; }
+    /* In Bulgarian the player's trade is three words ("Деятелка на
+       изкуството"). On one line it would take the room of the shelf of home
+       goods beside it, so it is set on two; a trade of one word is as wide
+       as it was. */
+    html[lang="bg"] .seat.seat-you .seat-head .seat-name-line .seat-role { display: block; flex: 0 0 auto; max-width: 7.8em; white-space: normal; line-height: 1.1; }
 
     .seat.seat-you .seat-head .player-last-turn {
       grid-column: 4;
@@ -9094,8 +9100,9 @@
       box-shadow: inset 0 0 0 2px rgba(69,38,19,.58), inset 0 0 0 3px rgba(252,218,145,.17), 0 1px 0 #26160e;
       translate: 0 2px;
     }
-    /* The headings keep clear of it. */
-    .opening-heading,
+    /* The headings keep clear of it; the home screen's also of the language
+       button beside it. */
+    .opening-heading { padding-right: calc(61px + var(--language-size)); }
     .opening-guide-heading { padding-right: 52px; }
     /* On the first page: a walnut tab that says what it does. */
     .opening-quit {
@@ -9147,17 +9154,37 @@
     @media (prefers-reduced-motion: no-preference) {
       .opening-quit { animation: title-page-rise .9s .9s cubic-bezier(.2,.7,.2,1) both; }
     }
-    /* The language, to the left of Quit: a walnut stud holding the flag of
-       the language being played. Quit is as wide as its wording, so the
-       script hands that width over (placeLanguageToggle). */
+    /* The language: a walnut stud holding the flag of the language being
+       played. On the first page it stands to the left of Quit, which is as
+       wide as its wording, so the script hands that width over
+       (placeLanguageToggle); on the home screen, to the left of the menu's
+       frame. A tap hangs a small walnut plaque beneath it with the flag of
+       every language, the one being played ringed. */
+    .opening-flow { --language-size: 36px; }
     .opening-language {
       position: absolute;
-      z-index: 7;
+      z-index: 8;
       top: var(--tools-top);
       right: calc(var(--tools-right) + var(--quit-width, 132px) + 11px);
       display: none;
-      width: 36px;
-      height: 36px;
+    }
+    body[data-view="title"] .opening-language,
+    body[data-view="opening"] .opening-language { display: block; }
+    /* (The menu's frame is 44 by 42, drawn larger for players: --tool-zoom.) */
+    body[data-view="opening"] .opening-language {
+      top: calc(var(--tools-top) + (42px * var(--tool-zoom) - var(--language-size)) / 2);
+      right: calc(var(--tools-right) + 44px * var(--tool-zoom) + 9px);
+    }
+    /* A level in a frame hands its home screen back to the page around it
+       (leaveLevelForHome); where it cannot, it does not offer a language
+       that page would not follow. */
+    html[data-level-frame] .opening-language { display: none !important; }
+    .opening-language-flags { position: absolute; }
+    .opening-language-button {
+      position: relative;
+      display: flex;
+      width: var(--language-size);
+      height: var(--language-size);
       padding: 0;
       align-items: center;
       justify-content: center;
@@ -9170,29 +9197,92 @@
       cursor: pointer;
       transition: filter .16s ease, translate .16s ease;
     }
-    body[data-view="title"] .opening-language { display: inline-flex; }
-    .opening-language:hover { filter: brightness(1.12); translate: 0 -1px; }
-    .opening-language:active { translate: 0 2px; }
-    .opening-language:focus-visible { outline: 2px solid #f3c869; outline-offset: 3px; }
-    .opening-language svg {
-      display: none;
+    .opening-language-button:hover { filter: brightness(1.12); translate: 0 -1px; }
+    .opening-language-button:active { translate: 0 2px; }
+    .opening-language-button:focus-visible,
+    .opening-language-option:focus-visible { outline: 2px solid #f3c869; outline-offset: 3px; }
+    .opening-language-button svg,
+    .opening-language-option svg {
+      display: block;
       width: 25px;
       height: 25px;
       border-radius: 50%;
       box-shadow: 0 0 0 1.5px #d9ac55, 0 0 0 2.5px rgba(41,24,15,.55), 0 1px 3px rgba(0,0,0,.45);
       filter: saturate(.92);
     }
-    html[data-language="en"] .opening-language svg[data-flag="en"],
-    html[data-language="de"] .opening-language svg[data-flag="de"] { display: block; }
+    .opening-language-button svg { display: none; }
+    html[data-language="en"] .opening-language-button svg[data-flag="en"],
+    html[data-language="de"] .opening-language-button svg[data-flag="de"],
+    html[data-language="bg"] .opening-language-button svg[data-flag="bg"] { display: block; }
     /* A finger-sized target around the stud. */
-    .opening-language::after { position: absolute; inset: -6px -5px -8px -6px; content: ""; }
+    .opening-language-button::after { position: absolute; inset: -6px -5px -8px -6px; content: ""; }
+    .opening-language-menu {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: -7px;
+      display: flex;
+      padding: 9px 11px;
+      gap: 11px;
+      border: 1px solid rgba(224,182,93,.78);
+      border-radius: 999px;
+      background:
+        radial-gradient(ellipse at 28% -12%, rgba(255,214,132,.2), transparent 58%),
+        repeating-linear-gradient(6deg, transparent 0 8px, rgba(237,193,109,.04) 9px 10px),
+        linear-gradient(150deg, #704729, #331e14);
+      box-shadow:
+        inset 0 0 0 2px rgba(31,19,14,.58),
+        0 4px 0 #1d120d,
+        0 18px 34px rgba(0,0,0,.5);
+    }
+    .opening-language-menu[hidden] { display: none; }
+    .opening-language-option {
+      position: relative;
+      display: flex;
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 50%;
+      background: none;
+      cursor: pointer;
+      transition: filter .16s ease, translate .16s ease;
+    }
+    .opening-language-option svg { width: 28px; height: 28px; }
+    .opening-language-option:hover { filter: brightness(1.14); translate: 0 -1px; }
+    .opening-language-option:active { translate: 0 1px; }
+    /* The language being played: a bright ring, and the others stand back a little. */
+    .opening-language-option[aria-checked="true"] svg { box-shadow: 0 0 0 2px #ffe19a, 0 0 0 3.5px rgba(41,24,15,.6), 0 0 9px 2px rgba(255,214,132,.5); }
+    .opening-language-option[aria-checked="false"] svg { filter: saturate(.8) brightness(.9); }
+    .opening-language-option[aria-checked="false"]:hover svg,
+    .opening-language-option[aria-checked="false"]:focus-visible svg { filter: saturate(.92); }
+    /* A finger-sized target around each flag. */
+    .opening-language-option::after { position: absolute; inset: -8px -5px; content: ""; }
     @media (max-height: 380px) {
-      .opening-language { top: max(5px, var(--safe-top)); width: 29px; height: 29px; }
-      .opening-language svg { width: 20px; height: 20px; }
+      .opening-flow { --language-size: 29px; }
+      .opening-language { top: max(5px, var(--safe-top)); }
+      .opening-language-button svg { width: 20px; height: 20px; }
     }
     @media (prefers-reduced-motion: no-preference) {
-      .opening-language { animation: title-page-rise .9s .9s cubic-bezier(.2,.7,.2,1) both; }
+      body[data-view="title"] .opening-language { animation: title-page-rise .9s .9s cubic-bezier(.2,.7,.2,1) both; }
     }
+    /* Bulgarian writes a thing's name with one capital, not one to a word. */
+    html[lang="bg"] .home-good-label,
+    html[lang="bg"] .good-name { text-transform: none; }
+    html[lang="bg"] .home-good-label::first-letter,
+    html[lang="bg"] .good-name::first-letter { text-transform: uppercase; }
+    /* Bulgarian's longer words on small plaques. The score is "Резултат:",
+       which leaves no room for a figure beside it on another player's card:
+       there the figure always stands under its label, as the turn's own
+       figure below it does. */
+    html[lang="bg"] .automaton-score-stack .wellbeing { flex-direction: column; flex-wrap: nowrap; align-items: flex-end; }
+    /* The votes under the portraits are "Против" and "Без глас": set a size
+       smaller, so that seven of them stand side by side in Level 2; and
+       "Без глас" on two lines, raised over the greyed portrait, so that it
+       keeps clear of the name beneath. */
+    html[lang="bg"] .easy-way-voter b { padding-inline: 5px; font-size: .5rem; letter-spacing: .04em; }
+    html[lang="bg"] .easy-way-voter[data-vote="out"] b { width: min-content; translate: -50% -9px; line-height: 1.12; }
     /* Another language is laid over the markup as the page loads
        (game-language.js); the page is not shown half in each. */
     html[data-language-pending] body { visibility: hidden; }
@@ -9216,7 +9306,20 @@
        wide as the screen. */
     html[data-device="android"] .level-frame { right: 0; left: 0; width: 100%; }
     body[data-view="level-frame"] { background: #0c1b17; }
-    body[data-view="level-frame"] > :not(.level-frame) { display: none !important; }
+    body[data-view="level-frame"] > :not(.level-frame):not(.page-strips) { display: none !important; }
+    /* The game in another language, opened in a frame over this page
+       (openGameInFrame). It fills the window, and is told the strips the
+       phone keeps clear of its camera, which a frame cannot see for itself:
+       .page-strips holds them as this page is given them. */
+    .level-frame.page-frame { inset: 0; width: 100%; height: 100%; }
+    .page-strips {
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+      visibility: hidden;
+      pointer-events: none;
+    }
     /* The same way back on the home screen, the guide and the briefings, which
        have no toolbar: a small tab at the top of the screen, shown only on a
        phone or tablet that has left full screen. (The first page has Play.)
@@ -9399,9 +9502,10 @@
   </style>
   <link rel="stylesheet" href="victory-screen.css">
   <link rel="stylesheet" href="level2.css">
-  <!-- The language being played, and the German it can be played in. -->
+  <!-- The language being played, and the German and Bulgarian it can be played in. -->
   <script src="game-language.js"></script>
   <script src="game-language-de.js"></script>
+  <script src="game-language-bg.js"></script>
   <script src="victory-screen.js"></script>
 </head>
 <body>
@@ -9417,13 +9521,29 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8v7.7"/><path d="M7.4 6.9a7.3 7.3 0 1 0 9.2 0"/></svg>
       <span data-ui-key="t467">Quit game</span>
     </button>
-    <!-- The language, on the first page: the flag of the one being played.
-         A tap changes to the other and loads the page again in it
-         (game-language.js). -->
-    <button class="opening-language" id="languageToggle" type="button" aria-label="Language: English. Switch to German" title="Language: English. Switch to German">
-      <svg data-flag="en" viewBox="0 0 32 32" aria-hidden="true"><defs><clipPath id="languageFlagRound"><circle cx="16" cy="16" r="16"/></clipPath></defs><g clip-path="url(#languageFlagRound)"><path fill="#2a4480" d="M0 0h32v32H0z"/><path d="M0 0l32 32M32 0 0 32" stroke="#f6ecd4" stroke-width="6.6"/><path d="M0 0l32 32M32 0 0 32" stroke="#bf4038" stroke-width="2.3"/><path d="M16 0v32M0 16h32" stroke="#f6ecd4" stroke-width="10.4"/><path d="M16 0v32M0 16h32" stroke="#bf4038" stroke-width="6"/></g></svg>
-      <svg data-flag="de" viewBox="0 0 32 32" aria-hidden="true"><g clip-path="url(#languageFlagRound)"><path fill="#231d19" d="M0 0h32v11H0z"/><path fill="#bf4038" d="M0 10.7h32v11H0z"/><path fill="#e8b23f" d="M0 21.3h32V32H0z"/></g></svg>
-    </button>
+    <!-- The language, on the first page (beside Quit) and on the home screen
+         (beside the menu): the flag of the one being played. A tap hangs
+         the flags of all the languages beneath it, and choosing one loads
+         the page again in that language (game-language.js; chooseLanguage
+         in the game's script). -->
+    <div class="opening-language" id="languageChoice">
+      <svg class="opening-language-flags" width="0" height="0" aria-hidden="true" focusable="false"><defs>
+        <clipPath id="languageFlagRound"><circle cx="16" cy="16" r="16"/></clipPath>
+        <symbol id="languageFlagEn" viewBox="0 0 32 32"><g clip-path="url(#languageFlagRound)"><path fill="#2a4480" d="M0 0h32v32H0z"/><path d="M0 0l32 32M32 0 0 32" stroke="#f6ecd4" stroke-width="6.6"/><path d="M0 0l32 32M32 0 0 32" stroke="#bf4038" stroke-width="2.3"/><path d="M16 0v32M0 16h32" stroke="#f6ecd4" stroke-width="10.4"/><path d="M16 0v32M0 16h32" stroke="#bf4038" stroke-width="6"/></g></symbol>
+        <symbol id="languageFlagDe" viewBox="0 0 32 32"><g clip-path="url(#languageFlagRound)"><path fill="#231d19" d="M0 0h32v11H0z"/><path fill="#bf4038" d="M0 10.7h32v11H0z"/><path fill="#e8b23f" d="M0 21.3h32V32H0z"/></g></symbol>
+        <symbol id="languageFlagBg" viewBox="0 0 32 32"><g clip-path="url(#languageFlagRound)"><path fill="#f6ecd4" d="M0 0h32v11H0z"/><path fill="#2f8a62" d="M0 10.7h32v11H0z"/><path fill="#bf4038" d="M0 21.3h32V32H0z"/></g></symbol>
+      </defs></svg>
+      <button class="opening-language-button" id="languageToggle" type="button" aria-label="Language: English" title="Language: English" aria-haspopup="menu" aria-expanded="false" aria-controls="languageMenu">
+        <svg data-flag="en" viewBox="0 0 32 32" aria-hidden="true"><use href="#languageFlagEn"/></svg>
+        <svg data-flag="de" viewBox="0 0 32 32" aria-hidden="true"><use href="#languageFlagDe"/></svg>
+        <svg data-flag="bg" viewBox="0 0 32 32" aria-hidden="true"><use href="#languageFlagBg"/></svg>
+      </button>
+      <div class="opening-language-menu" id="languageMenu" role="menu" aria-label="Choose a language" hidden>
+        <button class="opening-language-option" type="button" role="menuitemradio" aria-checked="false" data-language="en" lang="en" aria-label="English" title="English"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#languageFlagEn"/></svg></button>
+        <button class="opening-language-option" type="button" role="menuitemradio" aria-checked="false" data-language="de" lang="de" aria-label="Deutsch" title="Deutsch"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#languageFlagDe"/></svg></button>
+        <button class="opening-language-option" type="button" role="menuitemradio" aria-checked="false" data-language="bg" lang="bg" aria-label="Български" title="Български"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#languageFlagBg"/></svg></button>
+      </div>
+    </div>
     <div class="opening-tools" id="openingTools">
       <button class="icon-button menu-button" id="openingMenuButton" type="button" aria-label="Open the menu" aria-haspopup="menu" aria-expanded="false" aria-controls="openingMenu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>
@@ -10247,7 +10367,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.15.2-touch';
+    const APP_VERSION = '12.16.0-bulgarian';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
@@ -10620,10 +10740,11 @@
       {id:'organizer',name:'Rowan',role:'Organizer',automaton:true,position:'se',riskAversion:0,riskLabel:'bold'}
     );
 
-    // The trades, the goods and "You" are named in the language being played.
+    /* The trades, the goods and the players are named in the language being
+       played: each language gives the other players names of its own. */
     PLAYERS.forEach(player => {
       player.role = tr(player.role);
-      if (!player.automaton) player.name = tr(player.name);
+      player.name = tr(player.name);
     });
     [...Object.values(COMMON_GOODS).flat(), ...BLAND_GOODS, ...MEAGRE_GOODS].forEach(good => { good.name = tr(good.name); });
 
@@ -10632,11 +10753,13 @@
     /* A level opened inside the page of another, so that full screen goes on
        (see openLevelInFrame). It is played like any page of its own. */
     const IN_LEVEL_FRAME = window.top !== window && TEST_PARAMS.get('frame') === 'level';
-    /* The whole game in a frame, on a phone that draws the page smaller (see
-       hostPhonePage in <head>). The window around it holds nothing but the
-       frame, so the game is played as on a page of its own, levels and all;
-       only what belongs to a window (full screen, closing it, its title) is
-       asked of that window. */
+    document.documentElement.toggleAttribute('data-level-frame', IN_LEVEL_FRAME);
+    /* The whole game in a frame: on a phone that draws the page smaller (see
+       hostPhonePage in <head>), or after the language was changed in full
+       screen (openGameInFrame). The window around it holds nothing else that
+       is shown, so the game is played as on a page of its own, levels and
+       all; only what belongs to a window (full screen, closing it, its
+       title) is asked of that window. */
     const IN_PAGE_FRAME = window.top !== window && TEST_PARAMS.get('frame') === 'page';
     if (IN_PAGE_FRAME) {
       try {
@@ -11134,6 +11257,64 @@
       document.body.append(frame);
     }
 
+    /* Changing the language loads the page again, and that too would end
+       full screen. So in full screen the game in the new language opens in a
+       frame filling this page, and this page is put away for good: from
+       here on it is only the window the game is played in, as on a phone
+       that draws the page smaller (hostPhonePage, in <head>). The framed
+       game asks this window for what belongs to a window (IN_PAGE_FRAME),
+       and is told the strips the phone keeps clear of its camera, which a
+       frame cannot see for itself. A later change of language, and the
+       other level, load in that frame. */
+    function openGameInFrame(address) {
+      if (document.querySelector('.level-frame')) return;
+      address.searchParams.set('frame', 'page');
+      const strips = document.createElement('div');
+      strips.className = 'page-strips';
+      const frame = document.createElement('iframe');
+      frame.className = 'level-frame page-frame';
+      frame.title = document.title;
+      frame.allow = 'fullscreen; autoplay; screen-wake-lock';
+      const dress = page => {
+        const given = getComputedStyle(strips);
+        for (const side of ['Top', 'Right', 'Bottom', 'Left']) {
+          page.style.setProperty(`--safe-${side.toLowerCase()}`, `${(parseFloat(given[`padding${side}`]) || 0).toFixed(2)}px`);
+        }
+      };
+      // Again whenever the window changes: the screen turned, full screen left or entered.
+      const dressAgain = () => {
+        let page = null;
+        try { page = frame.contentDocument?.documentElement; } catch {}
+        if (page) dress(page);
+      };
+      window.CWT_PAGE_HOST = { dress, installed: 'installed' in document.documentElement.dataset };
+      addEventListener('resize', dressAgain, { passive: true });
+      // (The strips are all padding: it is their outer box that changes.)
+      if (window.ResizeObserver) new ResizeObserver(dressAgain).observe(strips, { box: 'border-box' });
+      frame.addEventListener('load', () => {
+        AUDIO.configure({ enabled: false });
+        document.body.dataset.view = 'level-frame';
+        frame.classList.add('shown');
+        frame.focus();
+      }, { once: true });
+      frame.src = address.href;
+      document.body.append(strips, frame);
+    }
+
+    /* The language button (#languageChoice), on the first page and on the
+       home screen. Chosen on the home screen, the new language opens there
+       too: the player has already gone in. */
+    function chooseLanguage(next) {
+      CWT_LANGUAGE.choose(next, {
+        at: document.body.dataset.view === 'opening' ? 'home' : '',
+        open: address => {
+          if (!inFullscreen() || window.top !== window || PHONE_PREVIEW) return false;
+          openGameInFrame(address);
+          return true;
+        }
+      });
+    }
+
     /* The first page: the series' title and one way in. Play is also the
        click the browser waits for before it lets a page make sound, so the
        music starts as the player goes in. */
@@ -11148,6 +11329,7 @@
       $('#openingGuide').hidden = true;
       $('#levelBriefing').hidden = true;
       $('#openingFarewell').hidden = true;
+      setLanguageMenuOpen(false);
       document.body.dataset.view = 'title';
       placeLanguageToggle();
       requestAnimationFrame(() => $('#titlePagePlay')?.focus({ preventScroll: true }));
@@ -11171,6 +11353,7 @@
 
     function showOpeningIntro({ focus = true } = {}) {
       const flow = $('#openingFlow');
+      setLanguageMenuOpen(false);
       flow.hidden = false;
       flow.setAttribute('aria-labelledby', 'openingTitle');
       $('#openingTitlePage').hidden = true;
@@ -11258,6 +11441,7 @@
       $('#gameApp').inert = true;
       $('#gameApp').setAttribute('aria-hidden', 'true');
       const flow = $('#openingFlow');
+      setLanguageMenuOpen(false);
       flow.hidden = false;
       flow.setAttribute('aria-labelledby', 'farewellHeading');
       for (const stage of ['#openingTitlePage', '#openingIntro', '#openingGuide', '#levelBriefing']) $(stage).hidden = true;
@@ -11268,6 +11452,7 @@
 
     function showOpeningGuide(slide = 0) {
       const flow = $('#openingFlow');
+      setLanguageMenuOpen(false);
       flow.hidden = false;
       $('#openingTitlePage').hidden = true;
       $('#openingIntro').hidden = true;
@@ -11280,6 +11465,7 @@
     function showLevelBriefing(level) {
       const shown = PLAYABLE_LEVELS.includes(level) ? level : PLAYABLE_LEVELS[0];
       const start = $('#levelStartButton');
+      setLanguageMenuOpen(false);
       $('#openingFlow').setAttribute('aria-labelledby', `levelBriefingTitle${shown}`);
       $('#openingTitlePage').hidden = true;
       $('#openingIntro').hidden = true;
@@ -11310,8 +11496,21 @@
       renderLearningGuideCard();
       renderPledgePriceGuideCard();
       const app = $('#gameApp');
-      // (frame: the game drawn smaller in a frame opens as any page does.)
-      const showFlow = [...TEST_PARAMS.keys()].every(key => key === 'dev' || key === 'phone' || key === 'lang' || (key === 'frame' && IN_PAGE_FRAME))
+      /* at=home: the language was changed on the home screen, and the page
+         opens there again (CWT_LANGUAGE.choose). The address is the page's
+         own again at once, so that loading it another time, sharing it or
+         installing the game from it starts at the first page. */
+      const atHome = TEST_PARAMS.get('at') === 'home';
+      if (TEST_PARAMS.has('at')) {
+        try {
+          const own = new URL(location.href);
+          own.searchParams.delete('at');
+          history.replaceState(history.state, '', own.href);
+        } catch { /* the address stays as it is */ }
+      }
+      // (frame: the game in a frame of its own opens as any page does.)
+      const showFlow = atHome
+        || [...TEST_PARAMS.keys()].every(key => key === 'dev' || key === 'phone' || key === 'lang' || key === 'at' || (key === 'frame' && IN_PAGE_FRAME))
         || TEST_PARAMS.has('intropreview')
         || TEST_PARAMS.has('guidepreview')
         || TEST_PARAMS.has('levelpreview');
@@ -11372,7 +11571,8 @@
       if (TEST_PARAMS.has('levelpreview')) showLevelBriefing(1);
       else if (TEST_PARAMS.has('guidepreview') || Number.isInteger(requestedSlide)) {
         showOpeningGuide(Number.isInteger(requestedSlide) ? requestedSlide : 0);
-      } else showOpeningTitle();
+      } else if (atHome) showOpeningIntro();
+      else showOpeningTitle();
     }
 
     function playerWellbeingTier(playerId, roundResult = null) {
@@ -13595,6 +13795,11 @@
       const consume=pledgeDesk.consume=clamp(pledgeDesk.consume,least,pledgeDesk.pool);
       $('#pledgeDeskPool').textContent=fmt(pledgeDesk.pool);
       $('#pledgeDeskKeep').textContent=fmt(pledgeDesk.pool-consume);
+      /* "1 good", "2 goods": the unit under the reserve follows its number.
+         The plural is the page's own text (t453); the singular is written here. */
+      const keepUnit=document.querySelector('.consume-zone-unit[data-ui-key="t453"]');
+      keepUnit.dataset.plural??=keepUnit.textContent;
+      keepUnit.textContent=fmt(pledgeDesk.pool-consume)===fmt(1)?T`good`:keepUnit.dataset.plural;
       $('#pledgeDeskSubmit').setAttribute('aria-label',T`Consume ${fmt(consume)}, keep ${fmt(pledgeDesk.pool-consume)} and finish the turn`);
       for(const id of ['consumeAmount','consumeSlider']){
         const el=$('#'+id);el.max=String(pledgeDesk.pool);el.min=String(least);
@@ -15887,6 +16092,7 @@
     $('#openingMenuButton').addEventListener('click', () => {
       const open = $('#openingMenu').hidden;
       AUDIO.cue(open ? 'dialog-open' : 'dialog-close');
+      setLanguageMenuOpen(false);
       setOpeningMenuOpen(open);
       if (open) $('#openingMenuPaper').focus({ preventScroll: true });
     });
@@ -15894,9 +16100,33 @@
       if (confirmedInMenu(event.currentTarget)) quitGame();
     });
     $('#titleQuit').addEventListener('click', quitGame);
-    $('#languageToggle').addEventListener('click', () => CWT_LANGUAGE.choose(CWT_LANGUAGE.other));
-    /* The language button stands beside Quit, which is as wide as its
-       wording. Kept on <html>, which the UI editor never writes. */
+    /* The language button: a tap hangs every language's flag beneath it, the
+       one being played marked; a tap on another loads the game in it. */
+    function setLanguageMenuOpen(open) {
+      $('#languageMenu').hidden = !open;
+      $('#languageToggle').setAttribute('aria-expanded', String(open));
+    }
+    document.querySelectorAll('#languageMenu [data-language]').forEach(option => {
+      option.setAttribute('aria-checked', String(option.dataset.language === CWT_LANGUAGE.current));
+    });
+    $('#languageToggle').addEventListener('click', () => {
+      const open = $('#languageMenu').hidden;
+      AUDIO.cue(open ? 'dialog-open' : 'dialog-close');
+      setOpeningMenuOpen(false);
+      setLanguageMenuOpen(open);
+      if (open) $('#languageMenu [aria-checked="true"]')?.focus({ preventScroll: true });
+    });
+    $('#languageMenu').addEventListener('click', event => {
+      const option = event.target.closest('[data-language]');
+      if (!option) return;
+      setLanguageMenuOpen(false);
+      if (option.dataset.language === CWT_LANGUAGE.current) {
+        AUDIO.cue('dialog-close');
+        $('#languageToggle').focus({ preventScroll: true });
+      } else chooseLanguage(option.dataset.language);
+    });
+    /* On the first page the button stands beside Quit, which is as wide as
+       its wording. Kept on <html>, which the UI editor never writes. */
     function placeLanguageToggle() {
       const width = $('#titleQuit').offsetWidth;
       if (width) document.documentElement.style.setProperty('--quit-width', `${width}px`);
@@ -15912,6 +16142,7 @@
     const MENUS = [
       { menu: $('#gameMenu'), button: $('#menuButton'), setOpen: setGameMenuOpen },
       { menu: $('#openingMenu'), button: $('#openingMenuButton'), setOpen: setOpeningMenuOpen },
+      { menu: $('#languageMenu'), button: $('#languageToggle'), setOpen: setLanguageMenuOpen },
     ];
     document.addEventListener('pointerdown', event => {
       for (const { menu, button, setOpen } of MENUS) {
@@ -15926,11 +16157,13 @@
         event.stopImmediatePropagation();
         shown.setOpen(false);
         shown.button.focus({ preventScroll: true });
-      } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-        const items = [...shown.menu.querySelectorAll('.game-menu-item')];
+      } else if (['ArrowDown', 'ArrowUp'].includes(event.key) || (shown.menu.id === 'languageMenu' && ['ArrowRight', 'ArrowLeft'].includes(event.key))) {
+        // (The flags lie in a row: there, right and left go on and back as well.)
+        const items = [...shown.menu.querySelectorAll('.game-menu-item, .opening-language-option')];
         const at = items.indexOf(document.activeElement);
+        const onward = event.key === 'ArrowDown' || event.key === 'ArrowRight';
         event.preventDefault();
-        items[(at + (event.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length].focus({ preventScroll: true });
+        items[(at + (onward ? 1 : items.length - 1)) % items.length].focus({ preventScroll: true });
       }
     });
 

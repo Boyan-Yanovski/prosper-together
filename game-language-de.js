@@ -16,6 +16,8 @@
      learning rate Lernrate · equilibrium Gleichgewicht.
    The players are addressed as "du". Notes about another player leave the
    pronoun out ("Erwartet …", "Will …"), so none has to be chosen.
+   The other players have traditional German names (names, below), chosen to
+   go with the portraits: a woman's for the Mystikerin, a man's for the Bauer.
 
    The UI editor writes into the page and styles parts when its preview is in
    German: it changes an entry's line, or adds one at the end of its part. So
@@ -31,6 +33,9 @@
   const turns = count => (count === 1 ? 'Runde' : 'Runden');
   // "1 Gut", "1,5 Güter": the amount arrives as the game writes it.
   const goods = amount => (String(amount) === '1' ? '1 Gut' : `${amount} Güter`);
+  /* The other players, by their English names: the Mystic, the Farmer, the
+     Scientist and the Craftsperson, and Level 2's Healer and Organizer. */
+  const names = { Sable: 'Hilde', Marlow: 'Hans', Iona: 'Lise', Ansel: 'Frieda', Mira: 'Martha', Rowan: 'Otto' };
 
   const page = {
     /* The first page, the home screen and the corner buttons */
@@ -107,6 +112,8 @@
     t40: '2 Inputs',
     t41: '3 Inputs',
     t42: 'bündeln',
+    t43: names.Sable,
+    t44: names.Marlow,
     t300: `<b>+1,3 ${wellbeing}</b>`,
     t301: `<b>+2,6 ${wellbeing}</b>`,
     t302: `<b>+3,9 ${wellbeing}</b>`,
@@ -114,6 +121,7 @@
 
     t46: 'Direkter Austausch mit den anderen Spielern',
     t47: 'Dein Gütervorrat hat einen zweiten Nutzen: Du kannst andere Spieler für die Zusage bezahlen, 1&nbsp;{0} in die Herstellung ihres Spezial-Inputs zu investieren. So kannst du versuchen, die Zusammenarbeit in Gang zu bringen und die Gesellschaft zum Wohlstandsgleichgewicht zu führen. Wie viel ein Spieler für eine Zusage verlangt, hängt davon ab, welche Beiträge er von den anderen erwartet und welchen Gewinn er sich vom Mitmachen verspricht.',
+    t49: names.Sable,
     t50: 'Mystikerin',
     t51: 'Bitte um {0}{1}{2} mehr',
     t55: 'Spezial-Input für {0} {1}',
@@ -131,8 +139,11 @@
     t66: 'Rechnen wieder mit dir',
     t67: 'langsam',
     t68: 'schnell',
+    t69: names.Sable,
     t70: 'Mystikerin',
+    t71: names.Marlow,
     t72: 'Bauer',
+    t73: names.Ansel,
     t74: 'Handwerkerin',
     t75: 'Alle drei sahen dich in den letzten beiden Runden zum Tisch beitragen.',
 
@@ -145,6 +156,7 @@
     t268: 'Überleben',
     t269: '',
     t270: 'Spezial-Input',
+    t85: names.Ansel,
     t86: 'Handwerkerin',
     t87: 'Erwartet Beiträge von',
     t88: 'Überleben',
@@ -274,7 +286,8 @@
   };
 
   const attributes = {
-    'Language: English. Switch to German': 'Sprache: Deutsch. Zu Englisch wechseln',
+    'Language: English': 'Sprache: Deutsch',
+    'Choose a language': 'Sprache wählen',
     'Open the menu': 'Menü öffnen',
     'Menu': 'Menü',
     'Experiential Economics on Substack (opens in a new tab)': 'Experiential Economics auf Substack (öffnet in neuem Tab)',
@@ -304,7 +317,8 @@
   };
 
   const text = {
-    /* The players, their trades, and the language button */
+    /* The players and their trades */
+    ...names,
     'You': 'Du',
     'Mystic': 'Mystikerin',
     'Farmer': 'Bauer',
@@ -442,6 +456,8 @@
     'Last turn': 'Zuletzt',
     '{} ran out of wellbeing after turn {}. {} inputs are permanently unavailable. With {} players left, the best possible collaborative return is {} wellbeing per remaining player per turn.': '{0} hatte nach Runde {1} kein Wohlergehen mehr. Inputs dieses Berufs ({2}) stehen dauerhaft nicht mehr zur Verfügung. Mit {3} verbleibenden Spielern liegt der bestmögliche gemeinsame Ertrag bei {4} Wohlergehen pro verbleibendem Spieler und Runde.',
     'Reserve: {} goods': amount => `Vorrat: ${goods(amount)}`,
+    // The unit under the reserve on the player's card when it is exactly 1 (the plural is the page's t453).
+    'good': 'Gut',
     'Of their own accord willing to': 'Investiert von sich aus',
     'invest <strong class="base-commitment-value">{}</strong> of their {} into their trade': '<strong class="base-commitment-value">{0}</strong> {1} in den eigenen Beruf',
     "{}'s upcoming energy allocation: {} to the table, {} to autarky": 'Geplante Energieverteilung von {0}: {1} zum Tisch, {2} in Autarkie',
@@ -536,7 +552,7 @@
     'Pledges cost extra to guarantee survival if table production fails.': 'Zusagen kosten mehr, damit das Überleben gesichert ist, falls die Produktion am Tisch scheitert.',
     'Read what {} did in turn {}': 'Lesen, was {0} in Runde {1} getan hat',
     '<strong>{}</strong> received only {} across the last {} turns, below the {} needed to survive.': '<strong>{0}</strong> erhielt in den letzten {2} Runden nur {1} – weniger als die {3}, die zum Überleben nötig sind.',
-    // "you" among the players a note expects to contribute: "… von dir, Sable und Marlow".
+    // "you" among the players a note expects to contribute: "… von dir, Hilde und Hans".
     'you': 'dir',
     ' and ': ' und ',
     'Expects {} to contribute their special inputs.': 'Erwartet Spezial-Inputs von {0}.',
@@ -585,6 +601,7 @@
   window.CWT_TRANSLATIONS = window.CWT_TRANSLATIONS || {};
   window.CWT_TRANSLATIONS.de = {
     title: 'Prosper Together — Market Mysteries, Teil 1',
+    decimal: ',',
     page, styles, attributes, text
   };
 }());

@@ -14,8 +14,8 @@ widens the circle to seven.
 
 The game runs in the browser on computers, tablets and phones (held sideways).
 On a phone it can be added to the home screen and then opens like an app.
-It can be played in English or in German: the flag on the first page changes
-the language.
+It can be played in English, German or Bulgarian: the flag button on the first
+page and on the home screen changes the language.
 
 The model behind the game (how production works, where its equilibria lie and
 how the other players decide) is set out in the companion paper:
