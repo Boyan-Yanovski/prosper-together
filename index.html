@@ -5712,7 +5712,7 @@
          <p>, a line apart. Where the words run in two columns each paragraph
          stays whole, so none leaves its last word at the head of the next
          column, and the second starts level with the first. */
-      .exposition-part { display: block; break-inside: avoid; }
+      .exposition-part { display: block; break-inside: avoid; font-size: calc(1em * var(--home-words-fit, 1)); }
       .exposition-part + .exposition-part { margin-top: 1.5em; margin-top: 1lh; }
       /* the button is the panel: it fills the column and carries its own caption */
       .opening-guide-button {
@@ -7720,7 +7720,8 @@
          transition too short to see, and the measure would read the old
          size. */
       html[data-measuring] #openingRules .opening-rule,
-      html[data-measuring] #openingRules .survival-gauge { transition: none !important; }
+      html[data-measuring] #openingRules .survival-gauge,
+      html[data-measuring] .exposition-part { transition: none !important; }
       /* A phone held sideways is short: the example ledger closes up so it
          fits its card. */
       @media (orientation: landscape) and (max-height: 440px) {
@@ -10367,7 +10368,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.16.0-bulgarian';
+    const APP_VERSION = '12.16.1-homewords';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
@@ -10857,8 +10858,9 @@
       });
     }
 
-    /* The guide's sizes are measured as they are set, so each has to be in
-       place when it is read (see html[data-measuring] in the styles). The
+    /* The guide's sizes, and the home screen's words, are measured as they are
+       set, so each has to be in place when it is read (see
+       html[data-measuring] in the styles). The
        last one is settled before changes go back to being as they were. */
     function measuringGuide(measure) {
       const root = document.documentElement;
@@ -11361,7 +11363,44 @@
       $('#openingGuide').hidden = true;
       $('#levelBriefing').hidden = true;
       document.body.dataset.view = 'opening';
+      fitHomeWords();
       if (focus) requestAnimationFrame(() => $('#openingGuideButton')?.focus({ preventScroll: true }));
+    }
+
+    /* The home screen's words stand between the heading and the levels. Where
+       a language's words are longer than that room, they are set smaller, by
+       as much as it takes (--home-words-fit on the screen: the size of the
+       parts inside the paragraph, in steps of 2%, down to 70%). Words that
+       fit keep the size the styles give them.
+       The room is measured again whenever it changes (the observer below):
+       the screen is still settling into place when it is first shown. */
+    function fitHomeWords() {
+      const words = $('#openingExposition');
+      const text = words?.querySelector('p');
+      if (!text || !text.getClientRects().length) return;
+      const stage = words.closest('.opening-stage');
+      const fits = () => {
+        const gap = parseFloat(getComputedStyle(stage).rowGap) || 0;
+        const above = stage.querySelector('.opening-heading').getBoundingClientRect().bottom + gap;
+        const below = stage.querySelector('.opening-levels').getBoundingClientRect().top - gap;
+        const box = text.getBoundingClientRect();
+        return box.top >= above - 1 && box.bottom <= below + 1;
+      };
+      const set = percent => stage.style.setProperty('--home-words-fit', (percent / 100).toFixed(2));
+      measuringGuide(() => {
+        stage.style.removeProperty('--home-words-fit');
+        if (fits()) return;
+        /* The largest size that fits, found by halving: smaller letters
+           never take more room. */
+        let least = 70, most = 98;
+        while (least < most) {
+          const middle = 2 * Math.ceil((least + most) / 4);
+          set(middle);
+          if (fits()) least = middle;
+          else most = middle - 2;
+        }
+        set(least);
+      });
     }
 
     /* The guide opens from the table (the ? button) as well as from the
@@ -11523,6 +11562,11 @@
         });
       });
       addEventListener('resize', () => { sizeGuideCard(); fitGuideGauge(); }, { passive: true });
+      if (window.ResizeObserver) {
+        const room = new ResizeObserver(fitHomeWords);
+        room.observe($('#openingIntro'));
+        room.observe($('#openingExposition'));
+      } else addEventListener('resize', fitHomeWords, { passive: true });
       $('#openingSlidePrevious').addEventListener('click', () => turnGuidePage(-1));
       $('#openingSlideNext').addEventListener('click', () => {
         if (turnGuidePage(1)) return;
@@ -16224,6 +16268,7 @@
       adjustResponsiveClearance();
       sizeGuideCard();
       fitGuideGauge();
+      fitHomeWords();
     });
     /* The music plays from the opening screen on: at once where the browser
        allows sound on load, otherwise from the first click or key press —
