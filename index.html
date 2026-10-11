@@ -7656,7 +7656,15 @@
         #openingRules[data-paging="card"] .opening-rule[data-opening-slide] {
           zoom: var(--guide-card-zoom, 1);
           grid-template-columns: minmax(0, 5fr) minmax(0, 8fr);
-          grid-template-rows: auto minmax(0, 1fr);
+          /* The words stand level with the picture: their middle on the
+             card's middle, which is the picture's. The heading keeps the
+             card's head. Three rows do it: the heading's, the words', and
+             one under the words as tall as the heading's (the two share
+             what the words leave, half each). Words too many to stand in
+             the middle start under the heading, as they did; more than
+             that and they scroll (and sizeGuideCard draws the card a step
+             smaller). */
+          grid-template-rows: 1fr minmax(0, auto) 1fr;
           align-items: start;
           column-gap: 14px;
         }
@@ -7667,7 +7675,8 @@
         /* Words that are still too many for a small phone scroll in their
            column rather than run off the card. */
         #openingRules[data-paging="card"] .opening-rule > p,
-        #openingRules[data-paging="card"] .opening-rule > .guide-survival-copy {
+        #openingRules[data-paging="card"] .opening-rule > .guide-survival-copy,
+        #openingRules[data-paging="card"] .opening-rule .guide-consumption-copy {
           min-height: 0;
           max-height: 100%;
           grid-column: 1;
@@ -7675,17 +7684,17 @@
           align-self: start;
           overflow-y: auto;
         }
-        #openingRules[data-paging="card"] .opening-rule > .opening-rule-visual { grid-column: 2; grid-row: 1 / span 2; align-self: stretch; }
-        /* The consumption card keeps its words and its ledger in one block. */
-        #openingRules[data-paging="card"] .opening-rule > .guide-consumption-layout {
-          grid-column: 1 / -1;
-          grid-row: 2;
-          align-self: stretch;
-          grid-template-columns: minmax(0, 5fr) minmax(0, 8fr);
-          grid-template-rows: minmax(0, 1fr);
-          align-items: start;
-          column-gap: 14px;
-        }
+        /* The picture has the card's whole height beside all three rows. It
+           takes that height and asks for none (contain: size, and no least
+           height of its own): a picture
+           that asked for its own would have the rows it stands beside made
+           tall enough for it, and the words' row squeezed between them. */
+        #openingRules[data-paging="card"] .opening-rule > .opening-rule-visual { min-height: 0; grid-column: 2; grid-row: 1 / -1; align-self: stretch; contain: size; }
+        /* The consumption card's words and its picture are the card's own
+           two columns, like every other card's: the picture, which is not
+           as tall as the card, stands in the middle of its column. */
+        #openingRules[data-paging="card"] .opening-rule > .guide-consumption-layout { display: contents; }
+        #openingRules[data-paging="card"] .opening-rule .guide-consumption-desk { display: grid; grid-column: 2; grid-row: 1 / -1; align-self: stretch; align-content: center; contain: size; }
       }
       /* With the page to itself a card has room for what the paired layout
          had to keep small or squeezed. */
@@ -7722,15 +7731,6 @@
       html[data-measuring] #openingRules .opening-rule,
       html[data-measuring] #openingRules .survival-gauge,
       html[data-measuring] .exposition-part { transition: none !important; }
-      /* A phone held sideways is short: the example ledger closes up so it
-         fits its card. */
-      @media (orientation: landscape) and (max-height: 440px) {
-        #openingRules[data-paging="card"] .guide-consumption-desk { padding: 5px 8px; }
-        #openingRules[data-paging="card"] .guide-consumption-desk h4 { margin-bottom: 2px; font-size: 14px; }
-        #openingRules[data-paging="card"] .guide-consumption-row { margin: 3px 0; padding: 2px 7px; }
-        #openingRules[data-paging="card"] .guide-consumption-slider { margin: 9px 5px; }
-        #openingRules[data-paging="card"] .guide-consumption-confirm { padding: 4px; }
-      }
       /* The home screen's text, larger now that it has the screen. */
       /* A line's length is measured in the paragraph's own letters, so it
          stays easy to follow at every size. */
@@ -9284,6 +9284,11 @@
        keeps clear of the name beneath. */
     html[lang="bg"] .easy-way-voter b { padding-inline: 5px; font-size: .5rem; letter-spacing: .04em; }
     html[lang="bg"] .easy-way-voter[data-vote="out"] b { width: min-content; translate: -50% -9px; line-height: 1.12; }
+    /* "Консумирай сега" is longer than its bin is wide at the labels' size and
+       tracking. A little smaller and set closer, it stands inside the bin's
+       edge: on the player's card, and in the guide's picture of it. */
+    html[lang="bg"] .consume-zone[data-zone="consume"] .consume-zone-label { font-size: clamp(.39rem, 1.66cqi, .5rem); letter-spacing: 0; }
+    html[lang="bg"] .guide-consumption-desk .consume-zone[data-zone="consume"] .consume-zone-label { font-size: 1.85cqi; }
     /* Another language is laid over the markup as the page loads
        (game-language.js); the page is not shown half in each. */
     html[data-language-pending] body { visibility: hidden; }
@@ -9437,20 +9442,30 @@
     .opening-rules[data-cards="1"] .opening-rule[data-stock="consumption"] { grid-column:1 / span 2; grid-template-rows:auto minmax(0,1fr); }
     .guide-consumption-layout { display:grid; grid-template-columns:1fr; grid-template-rows:auto minmax(0,1fr); gap:6px; align-items:center; min-height:0; }
     .guide-consumption-copy p { margin:0 0 5px; font-size:clamp(10px,1.65svh,13px); line-height:1.25; }
-    .guide-consumption-desk { padding:clamp(10px,2svh,20px); border:2px solid #b7986b; border-radius:12px; background:linear-gradient(#f6e7c7,#ead3a8); color:#493823; box-shadow:0 3px 5px #49382333; }
-    .guide-consumption-desk h4 { margin:0 0 10px; font-family:Georgia,serif; font-size:clamp(15px,2.7svh,20px); }
-    .guide-consumption-row { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:7px; margin:5px 0; border:1px solid #b7986b66; border-radius:7px; background:#fff6dd; font-size:clamp(10px,1.8svh,13px); }
-    .guide-consumption-number { background:#fff9ec; border:1px solid #b7986b; border-radius:5px; padding:3px 20px 3px 6px; }
-    .guide-consumption-slider { height:7px; margin:15px 5px; background:linear-gradient(to right,#b48136 50%,#675c49 50%); border-radius:6px; position:relative; }
-    .guide-consumption-slider::after { content:''; position:absolute; left:calc(50% - 7px); top:-4px; width:15px; height:15px; border-radius:50%; background:#b48136; }
-    .guide-consumption-keep { background:#497c5820; color:#37785e; }
-    .guide-consumption-confirm { text-align:center; background:linear-gradient(120deg,#daa34e,#ac6c37); color:#fff8e5; border:1px solid #9b6939; border-radius:9px; padding:10px; font-weight:700; font-size:clamp(10px,1.8svh,13px); }
-    .guide-consumption-desk small { display:block; font-size:clamp(9px,1.5svh,11px); margin:8px 0; }
-    .guide-consumption-desk { padding:clamp(6px,1.2svh,10px); }
-    .guide-consumption-desk h4 { margin-bottom:5px; }
-    .guide-consumption-row { padding:4px 7px; margin:4px 0; }
-    .guide-consumption-desk small { margin:5px 0; }
-    .guide-consumption-confirm { padding:7px; }
+    /* The guide's picture of the decision is the panel itself as it stands on
+       the player's card (.pledge-desk and its zones, "Consume or save"
+       above), drawn to the picture's own width: every measure is the share
+       of the panel's width it has on a full-size card (432px wide there, so
+       1cqi here is 4.32px there), which makes it as easy to read here as it
+       is there. Nothing in it is to be operated: the amount is a figure in a
+       field, the rail and its coin a drawing, the plaque a picture of the
+       button. */
+    .guide-consumption-desk { container-type:inline-size; min-width:0; align-self:center; pointer-events:none; }
+    .guide-consumption-desk .pledge-desk { margin:0; padding:.93cqi; gap:1.16cqi 2.08cqi; border-radius:3.2cqi 1.6cqi 3.5cqi 1.85cqi; }
+    .guide-consumption-desk .consume-zone { gap:.6cqi; }
+    .guide-consumption-desk .consume-zone[data-zone="consume"],
+    .guide-consumption-desk .consume-zone[data-zone="keep"] { padding:1.16cqi .93cqi; border-width:max(2px,.46cqi); border-radius:2.3cqi; }
+    .guide-consumption-desk .consume-zone[data-zone="divide"] { padding:.6cqi .46cqi 0; }
+    .guide-consumption-desk .consume-zone-label { font-size:2.04cqi; }
+    .guide-consumption-desk .consume-zone-figure { gap:.97cqi; font-size:4.75cqi; }
+    /* (The guide's own rules for a card's paragraphs and bold words are kept off it.) */
+    .guide-consumption-desk .consume-zone[data-zone] .consume-zone-note { font-size:2.27cqi; line-height:1.15; }
+    .guide-consumption-desk .consume-zone[data-zone="consume"] .consume-zone-note { color:#6f6048; }
+    .guide-consumption-desk .consume-zone-figure strong { color:inherit; }
+    .guide-consumption-number { width:2.45em; padding:.08em .1em; border:1px solid rgba(124,90,40,.45); border-radius:.39em .29em .44em .29em; background:#fffaf0; box-shadow:inset 0 1px 3px rgba(84,58,32,.2); color:#46301f; text-align:center; }
+    .guide-consumption-slider { position:relative; width:100%; height:2.3cqi; margin:1.85cqi 0; border:1px solid rgba(88,55,28,.42); border-radius:999px; background:linear-gradient(90deg,#e2a93c 0 50%,#86a868 50% 100%); box-shadow:inset 0 2px 3px rgba(60,36,14,.28),0 1px 0 rgba(255,250,230,.6); }
+    .guide-consumption-slider::after { content:''; position:absolute; left:50%; top:50%; width:4.86cqi; height:4.86cqi; translate:-50% -58%; border:2px solid rgba(117,76,17,.5); border-radius:50%; background:radial-gradient(circle at 34% 28%,#fff6bd 0 9%,transparent 10%),repeating-radial-gradient(circle at center,transparent 0 5px,rgba(117,76,17,.09) 6px 7px),linear-gradient(145deg,#f5d56c,#c98d29); box-shadow:0 2px 0 #956121,0 4px 7px rgba(61,39,17,.28),inset 0 0 0 2px rgba(255,239,163,.3); }
+    .guide-consumption-desk .pledge-desk-submit { min-height:8.56cqi; margin-bottom:.7cqi; padding:.46cqi 1.85cqi; gap:1.39cqi; border-radius:1.85cqi 2.55cqi 1.6cqi 2.3cqi; font-size:2.66cqi; cursor:default; }
     @media(max-width:600px) and (orientation:portrait) { .opening-rules[data-cards="1"] .opening-rule[data-stock="consumption"] { grid-column:auto; } }
     .personal-trust-line, .v8-retired-control { display:none !important; }
     .seat:not(.seat-you) { min-width:232px; }
@@ -9799,12 +9814,23 @@
               <p data-ui-key="t114" data-ui-removed="own-aria" aria-hidden="true"><strong data-ui-key="t115">Consume:</strong> each good adds 1 wellbeing and counts toward survival. <strong data-ui-key="t116">Save:</strong> durable goods for later consumption or upfront pledges.</p>
             </div>
             <div class="guide-consumption-desk" role="img" aria-label="Example: 6 available goods, consume 3 and keep 3 in reserve. Consumption cannot go below the current survival requirement." data-ui-key="t351">
-              <h4 data-ui-key="t117">Consume or save?</h4>
-              <div class="guide-consumption-row" data-ui-key="t352"><span data-ui-key="t118">Available goods</span><strong data-ui-key="t119">6 goods</strong></div>
-              <div class="guide-consumption-row" data-ui-key="t353"><span data-ui-key="t120">Consume now <span data-opening-icon="wellbeing"></span></span><span class="guide-consumption-number" data-ui-key="t121">3</span></div>
-              <div class="guide-consumption-slider" aria-hidden="true"></div>
-              <div class="guide-consumption-row guide-consumption-keep" data-ui-key="t354"><span data-ui-key="t122">Kept in reserve</span><strong data-ui-key="t123">3 goods</strong></div>
-              <div class="guide-consumption-confirm" data-ui-key="t124">▶ Consume 3 &amp; finish turn</div>
+              <div class="pledge-desk" data-ui-key="t492">
+                <div class="consume-zone" data-zone="consume" data-ui-key="t353">
+                  <span class="consume-zone-label" data-ui-key="t120">Consume now</span>
+                  <div class="consume-zone-figure" data-ui-key="t493"><span class="guide-consumption-number" data-ui-key="t121">3</span><span class="consume-zone-unit" data-opening-icon="wellbeing"></span></div>
+                  <p class="consume-zone-note" data-ui-key="t494">No minimum this turn</p>
+                </div>
+                <div class="consume-zone" data-zone="divide" data-ui-key="t352">
+                  <span class="consume-zone-label" data-ui-key="t495"><span data-ui-key="t118">Available goods</span><strong data-ui-key="t119">6</strong></span>
+                  <div class="guide-consumption-slider"></div>
+                </div>
+                <div class="consume-zone" data-zone="keep" data-ui-key="t354">
+                  <span class="consume-zone-label" data-ui-key="t122">In reserve</span>
+                  <div class="consume-zone-figure" data-ui-key="t496"><strong data-ui-key="t497">3</strong><span class="consume-zone-unit" data-ui-key="t123">goods</span></div>
+                  <p class="consume-zone-note" data-ui-key="t498">Yours again next turn</p>
+                </div>
+                <div class="pledge-desk-submit" data-ui-key="t499"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg><span data-ui-key="t124">Finish turn</span></div>
+              </div>
             </div>
           </div>
         </article>
@@ -10368,7 +10394,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.16.1-homewords';
+    const APP_VERSION = '12.16.2-guidecard';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
@@ -10848,7 +10874,7 @@
          their proportions. */
       const card = document.querySelector('#openingRules[data-paging="card"] .opening-rule:not([hidden])');
       if (!card || !matchMedia('(orientation: landscape)').matches) return;
-      const held = [...card.querySelectorAll(':scope > p, :scope > .guide-survival-copy, .opening-mini-note')];
+      const held = [...card.querySelectorAll(':scope > p, :scope > .guide-survival-copy, .guide-consumption-copy, .opening-mini-note')];
       const cramped = () => held.some(part => part.scrollHeight > part.clientHeight + 1);
       measuringGuide(() => {
         for (const least = Math.max(.85, zoom - .3); zoom > least && cramped();) {
@@ -11004,11 +11030,6 @@
           || (oneCard && slideCards.indexOf(rule) !== openingRuleCard);
       });
       rules.dataset.cards = String(document.querySelectorAll('.opening-rule:not([hidden])').length);
-      // Sized once the page's card is the one showing: its words are measured.
-      if (oneCard) {
-        sizeGuideCard();
-        fitGuideGauge();
-      }
       document.querySelectorAll('.opening-guide-title[data-opening-slide]').forEach(title => {
         title.hidden = Number(title.dataset.openingSlide) !== openingRuleSlide;
       });
@@ -11026,6 +11047,17 @@
         : guideReturnsToGame
           ? T`Back to the game`
           : T`Choose a level` + ' <span class="opening-arrow-down" aria-hidden="true"></span>';
+      /* Sized once the page stands as it will be shown: its card the one
+         showing, its heading and its buttons in place. The card's words are
+         measured in the room those leave. (Sized before the heading had
+         changed, a card was given the room the page before had: opened again
+         after its last page, whose heading is one line, the guide's first
+         page, whose heading is two, had its words scrolled. That is how the
+         guide came to look different from inside a level.) */
+      if (oneCard) {
+        sizeGuideCard();
+        fitGuideGauge();
+      }
       if (focus) requestAnimationFrame(() => $('#openingSlideNext')?.focus({ preventScroll: true }));
     }
 
