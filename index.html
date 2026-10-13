@@ -313,7 +313,7 @@
     }());
   </script>
   <!-- The game carries its own fonts, so it looks the same on every computer. -->
-  <link rel="stylesheet" href="game-fonts.css">
+  <link rel="stylesheet" href="game-fonts.css?v=caf4c6800a">
   <style>
     :root {
       color-scheme: light;
@@ -9665,13 +9665,13 @@
       #gameBoard:has(#tableShell[data-state="planning"]) .seat:not(.seat-you) .seat-foot { margin-top:3px; padding-top:3px; }
     }
   </style>
-  <link rel="stylesheet" href="victory-screen.css">
-  <link rel="stylesheet" href="level2.css">
+  <link rel="stylesheet" href="victory-screen.css?v=68c37d7a39">
+  <link rel="stylesheet" href="level2.css?v=d5279f9c69">
   <!-- The language being played, and the German and Bulgarian it can be played in. -->
-  <script src="game-language.js"></script>
-  <script src="game-language-de.js"></script>
-  <script src="game-language-bg.js"></script>
-  <script src="victory-screen.js"></script>
+  <script src="game-language.js?v=b5e4cba74e"></script>
+  <script src="game-language-de.js?v=49d0518ff3"></script>
+  <script src="game-language-bg.js?v=cd9e8fb593"></script>
+  <script src="victory-screen.js?v=5dc3a601d9"></script>
 </head>
 <body>
   <section class="opening-flow" id="openingFlow" role="dialog" aria-modal="true" aria-labelledby="openingTitle">
@@ -10515,12 +10515,12 @@
     </div>
   </dialog>
 
-  <script src="paper-pages.js"></script>
-  <script src="level-config.js"></script>
-  <script src="game-parameters.js"></script>
-  <script src="simple-agents.js"></script>
-  <script src="reserve-economy.js"></script>
-  <script src="game-audio.js"></script>
+  <script src="paper-pages.js?v=f33cf54899"></script>
+  <script src="level-config.js?v=e943587771"></script>
+  <script src="game-parameters.js?v=1931178c2b"></script>
+  <script src="simple-agents.js?v=79958a8b01"></script>
+  <script src="reserve-economy.js?v=b514b5953c"></script>
+  <script src="game-audio.js?v=ad72c5e18c"></script>
   <script>
     'use strict';
     /* The language being played (game-language.js). Another language than
@@ -10543,7 +10543,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.16.6-ipadsound';
+    const APP_VERSION = '12.16.7-safarisound';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
@@ -16695,6 +16695,6 @@
     };
 
   </script>
-  <script src="level2-ui.js"></script>
+  <script src="level2-ui.js?v=abfc27015f"></script>
 </body>
 </html>

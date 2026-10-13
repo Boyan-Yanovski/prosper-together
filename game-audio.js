@@ -309,6 +309,7 @@ window.CommonWorksAudio = (() => {
       return { dry, wet };
     };
     E.master = master;
+    E.out = limiter;
     E.buses = { music: bus(), sfx: bus() };
 
     E.ramp = (param, value, timeConstant = .06) => {
@@ -969,6 +970,14 @@ window.CommonWorksAudio = (() => {
   let timer = null;
   let unlocked = false;
   let target = null;
+  /* The sound check (?soundcheck, below). */
+  const SOUND_CHECK = new URLSearchParams(location.search).has('soundcheck');
+  const checkLog = [];
+  let checkPanel = null;
+  let checkTimer = null;
+  let checkMeter = null;
+  let checkPeak = 0;
+  let checkTimeBefore = null;
 
   function defaultScene() {
     const ids = (window.CWT_PLAYER_IDS || LEVEL_ONE_IDS).slice();
@@ -1033,20 +1042,26 @@ window.CommonWorksAudio = (() => {
     if (!session) return;
     const silent = prefs.muted || (prefs.music <= 0 && prefs.effects <= 0);
     const type = silent ? 'auto' : 'playback';
-    try { if (session.type !== type) session.type = type; } catch {}
+    try { if (session.type !== type) { session.type = type; note(`session asked: ${type}`); } }
+    catch (error) { note(`session refused: ${error.name}`); }
   }
 
   function ensureEngine() {
     if (!config.enabled) return false;
     if (engine) return true;
     const Context = window.AudioContext || window.webkitAudioContext;
-    if (!Context) return false;
+    if (!Context) { note('this browser offers no Web Audio'); return false; }
     claimSession();
     try { ctx = new Context({ latencyHint: 'interactive' }); }
-    catch { return false; }
+    catch (error) { note(`no audio context: ${error.name}`); return false; }
+    note(`context made: ${ctx.state}`);
     engine = createEngine(ctx);
     music = createMusic(engine);
-    ctx.addEventListener('statechange', () => {
+    const made = ctx;
+    made.addEventListener('statechange', () => {
+      // A context that was put away (configure) still says that it closed.
+      if (made !== ctx) return;
+      note(`state: ${ctx.state}`);
       refreshMusic();
       stateListeners.forEach(listener => listener(ctx.state));
     });
@@ -1058,14 +1073,18 @@ window.CommonWorksAudio = (() => {
   }
 
   /* Starts the sound. Most browsers let a page make sound only after the
-     player has clicked or pressed a key; until then the audio waits,
-     suspended, and the first click or key press brings it in. An iPad also
-     stops the sound when another tab or app takes it ('interrupted'); the
-     next touch brings it back the same way. */
+     player has clicked or pressed a key; until then the audio waits, and the
+     first click or key press brings it in. Chrome and Firefox call the
+     waiting audio 'suspended'. Safari calls it 'interrupted', the word it
+     also has for sound another tab or app took away. Asking only a
+     suspended audio to start left the game silent in Safari for good. */
   function unlock() {
     if (!ensureEngine()) return;
     unlocked = true;
-    if (ctx.state !== 'running' && !document.hidden) ctx.resume().then(refreshMusic, () => {});
+    if (ctx.state !== 'running' && !document.hidden) {
+      const from = ctx.state;
+      ctx.resume().then(() => { note(`asked while ${from}: now ${ctx?.state}`); refreshMusic(); }, error => note(`asked while ${from}: refused, ${error?.name}`));
+    }
     refreshMusic();
   }
 
@@ -1115,6 +1134,8 @@ window.CommonWorksAudio = (() => {
       ctx = engine = music = null;
       unlocked = false;
     }
+    if (!config.enabled) closeSoundCheck();
+    else if (SOUND_CHECK && document.body) openSoundCheck();
   }
 
   /* Opening and closing windows. The end-of-game windows bring their own
@@ -1131,20 +1152,150 @@ window.CommonWorksAudio = (() => {
     }).observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['open'], attributeOldValue: true });
   }
 
+  /* Which of a touch's events a browser takes for the player's own act
+     differs: the press, its end, or the click it makes. The sound is asked
+     for at each of them until it runs. */
   function install() {
-    for (const type of ['pointerdown', 'keydown', 'touchend']) {
-      window.addEventListener(type, () => { if (!running() || !unlocked) unlock(); }, { capture: true, passive: true });
+    for (const type of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']) {
+      window.addEventListener(type, () => {
+        if (running() && unlocked) return;
+        note(type);
+        unlock();
+      }, { capture: true, passive: true });
     }
     document.addEventListener('visibilitychange', () => {
+      note(document.hidden ? 'page hidden' : 'page shown');
       if (!engine) return;
       if (document.hidden) ctx.suspend().catch(() => {});
       else if (unlocked) ctx.resume().then(refreshMusic, () => {});
       refreshMusic();
     });
     watchDialogs();
+    if (SOUND_CHECK) {
+      addEventListener('error', event => note(`error: ${event.message}`));
+      openSoundCheck();
+    }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install, { once: true });
   else install();
+
+  /* ------------------------------------------------------- the sound check */
+
+  /* ?soundcheck in the address writes on the page what the browser is doing
+     with the sound: for a device that stays silent and cannot be looked into
+     from here, whose owner can read it off or send a picture of it. It also
+     offers two beeps that go round the game's own sound: one made as the
+     game makes sound, one played as a video's sound is. Which of them is
+     heard says where the silence lies. */
+  function note(text) {
+    if (!SOUND_CHECK) return;
+    const last = checkLog[checkLog.length - 1];
+    if (last?.text === text) { last.times += 1; return; }
+    checkLog.push({ at: (performance.now() / 1000).toFixed(1), text, times: 1 });
+    if (checkLog.length > 14) checkLog.shift();
+  }
+
+  /* What leaves the game for the loudspeaker, measured; so that sound that
+     is made and not heard can be told from sound that is not made. */
+  function signal() {
+    if (!engine || !ctx.createAnalyser) return 'not measured';
+    if (!checkMeter || checkMeter.context !== ctx) {
+      checkMeter = ctx.createAnalyser();
+      checkMeter.fftSize = 2048;
+      engine.out.connect(checkMeter);
+    }
+    const samples = new Float32Array(checkMeter.fftSize);
+    checkMeter.getFloatTimeDomainData(samples);
+    let peak = 0;
+    for (const sample of samples) peak = Math.max(peak, Math.abs(sample));
+    checkPeak = Math.max(peak, checkPeak * .6);
+    return checkPeak > 1e-5 ? `${Math.round(20 * Math.log10(checkPeak))} dB` : 'none';
+  }
+
+  function soundCheck() {
+    const session = navigator.audioSession;
+    const time = ctx ? ctx.currentTime : null;
+    const moving = time === null || checkTimeBefore === null ? '' : time > checkTimeBefore ? ', moving' : ', standing still';
+    checkTimeBefore = time;
+    const percent = level => `${Math.round(level * 100)}%`;
+    return [
+      `SOUND CHECK  game ${(() => { try { return APP_VERSION; } catch { return '?'; } })()}`,
+      navigator.userAgent.replace(/^Mozilla\/5\.0 /, ''),
+      `Web Audio: ${window.AudioContext ? 'yes' : window.webkitAudioContext ? 'yes (webkit)' : 'NO'}   session: ${session ? `${session.type}, ${session.state}` : 'none'}`,
+      `game sound: ${config.enabled ? 'on' : 'OFF'}${prefs.muted ? ', MUTED' : ''}, music ${percent(prefs.music)}, effects ${percent(prefs.effects)}`,
+      `context: ${ctx ? `${ctx.state}, ${time.toFixed(1)} s${moving}, ${ctx.sampleRate} Hz` : 'none'}`,
+      `asked to start: ${unlocked ? 'yes' : 'no'}   music: ${music?.running ? 'playing' : 'not playing'}   signal: ${signal()}`,
+      `page: ${document.hidden ? 'hidden' : 'shown'}${document.hasFocus() ? ', in focus' : ', not in focus'}`,
+      ...checkLog.map(entry => `${entry.at}  ${entry.text}${entry.times > 1 ? `  (${entry.times} times)` : ''}`)
+    ];
+  }
+
+  /* A beep of the game's kind (Web Audio) on a context of its own. */
+  function beepAsTheGame() {
+    const Context = window.AudioContext || window.webkitAudioContext;
+    if (!Context) { note('beep 1: no Web Audio'); return; }
+    const own = new Context();
+    const tone = own.createOscillator();
+    const level = own.createGain();
+    tone.frequency.value = 660;
+    level.gain.value = .15;
+    tone.connect(level); level.connect(own.destination);
+    tone.start();
+    tone.stop(own.currentTime + .6);
+    own.resume().catch(() => {});
+    setTimeout(() => {
+      note(`beep 1: context ${own.state}, ${own.currentTime.toFixed(2)} s`);
+      own.close().catch(() => {});
+    }, 900);
+  }
+
+  /* A beep of a video's kind: a sound file, made here, in an audio element. */
+  function beepAsAVideo() {
+    const rate = 44100;
+    const count = Math.round(rate * .6);
+    const bytes = new DataView(new ArrayBuffer(44 + count * 2));
+    const word = (at, text) => [...text].forEach((letter, index) => bytes.setUint8(at + index, letter.charCodeAt(0)));
+    word(0, 'RIFF'); bytes.setUint32(4, 36 + count * 2, true); word(8, 'WAVEfmt ');
+    bytes.setUint32(16, 16, true); bytes.setUint16(20, 1, true); bytes.setUint16(22, 1, true);
+    bytes.setUint32(24, rate, true); bytes.setUint32(28, rate * 2, true); bytes.setUint16(32, 2, true); bytes.setUint16(34, 16, true);
+    word(36, 'data'); bytes.setUint32(40, count * 2, true);
+    for (let index = 0; index < count; index += 1) {
+      const fade = Math.min(1, index / 400, (count - index) / 400);
+      bytes.setInt16(44 + index * 2, Math.sin(index / rate * 2 * Math.PI * 440) * 5000 * fade, true);
+    }
+    const player = new Audio(URL.createObjectURL(new Blob([bytes], { type: 'audio/wav' })));
+    player.play().then(() => note('beep 2: playing'), error => note(`beep 2: refused, ${error.name}`));
+  }
+
+  function openSoundCheck() {
+    if (checkPanel || !config.enabled) return;
+    checkPanel = document.createElement('div');
+    checkPanel.id = 'soundCheck';
+    checkPanel.style.cssText = 'position:fixed;left:6px;top:6px;z-index:2147483647;max-width:min(52ch,62vw);padding:7px 9px;border-radius:6px;'
+      + 'background:rgba(8,12,16,.86);color:#f4f4f0;font:11px/1.35 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;pointer-events:none;';
+    const text = document.createElement('div');
+    const buttons = document.createElement('div');
+    buttons.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;';
+    for (const [label, beep] of [['Beep 1: as the game', beepAsTheGame], ['Beep 2: as a video', beepAsAVideo]]) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = label;
+      button.style.cssText = 'pointer-events:auto;font:inherit;padding:5px 8px;border:1px solid #f4f4f0;border-radius:5px;background:#24303a;color:#f4f4f0;';
+      button.addEventListener('click', beep);
+      buttons.append(button);
+    }
+    checkPanel.append(text, buttons);
+    const write = () => { text.textContent = soundCheck().join('\n'); };
+    checkTimer = setInterval(write, 500);
+    write();
+    (document.body || document.documentElement).append(checkPanel);
+  }
+
+  function closeSoundCheck() {
+    clearInterval(checkTimer);
+    checkPanel?.remove();
+    checkPanel = checkMeter = null;
+  }
 
   /* Renders cues and music without a sound card, for checks and previews. */
   async function renderOffline({ cues = [], scene: musicScene = null, seconds = 4, sampleRate = 44100 } = {}) {
@@ -1184,6 +1335,8 @@ window.CommonWorksAudio = (() => {
     }),
     log: () => cueLog.slice(),
     clearLog: () => { cueLog.length = 0; },
+    /* The lines ?soundcheck writes on the page. */
+    soundCheck,
     cues: Object.keys(SFX),
     renderOffline,
     /* The notes a scene plays over a number of bars, with the chord under
