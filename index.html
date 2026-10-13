@@ -9077,6 +9077,37 @@
       background: linear-gradient(90deg, transparent, rgba(224,182,93,.5) 16%, rgba(224,182,93,.5) 84%, transparent);
       content: "";
     }
+    /* The legal notice, in every menu: no entry among the entries, but a line
+       of its own under them, across the menu's whole width. */
+    .game-menu-legal {
+      position: relative;
+      display: flex;
+      min-height: 34px;
+      grid-column: 1 / -1;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 10px 1px;
+      text-align: center;
+      border-radius: 8px 7px 9px 7px;
+      color: rgba(255,231,176,.74);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: .78rem;
+      letter-spacing: .03em;
+      text-decoration: underline;
+      text-decoration-color: rgba(255,231,176,.32);
+      text-underline-offset: .2em;
+    }
+    .game-menu-legal::before {
+      position: absolute;
+      top: 0;
+      right: 10px;
+      left: 10px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(224,182,93,.5) 16%, rgba(224,182,93,.5) 84%, transparent);
+      content: "";
+    }
+    .game-menu-legal:hover { color: #ffe7b0; text-decoration-color: currentColor; }
+    .game-menu-legal:focus-visible { outline: 2px solid #f3c869; outline-offset: -3px; }
     .game-menu-item:hover { background-color: rgba(255,214,132,.11); }
     .game-menu-item:active { background-color: rgba(255,214,132,.18); }
     .game-menu-item:focus-visible { outline: 2px solid #f3c869; outline-offset: -3px; }
@@ -9118,6 +9149,9 @@
         column-gap: 6px;
       }
       #gameMenu .game-menu-item:nth-child(4)::before { display: none; }
+      /* (Placed by name: left to itself, a line across both columns would be
+         laid out first and take the entries' top row.) */
+      #gameMenu .game-menu-legal { grid-row: 4; }
     }
 
     /* The companion paper, read inside the game (Menu > Companion paper):
@@ -9309,6 +9343,25 @@
       transition: filter .16s ease, translate .16s ease;
     }
     body[data-view="title"] .opening-quit { display: inline-flex; }
+    .opening-legal {
+      position: absolute;
+      z-index: 7;
+      right: var(--tools-right);
+      bottom: max(clamp(4px, 1.4svh, 12px), var(--safe-bottom));
+      display: none;
+      color: rgba(247,232,197,.6);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(.7rem, 1.15vw, .86rem);
+      letter-spacing: .02em;
+      line-height: 1.2;
+      text-decoration: underline;
+      text-decoration-color: rgba(247,232,197,.3);
+      text-underline-offset: .2em;
+      text-shadow: 0 1px 6px rgba(0,0,0,.6);
+    }
+    body[data-view="title"] .opening-legal { display: block; }
+    .opening-legal:hover, .opening-legal:focus-visible { color: #fbe6b4; text-decoration-color: currentColor; }
+    @media (max-height: 380px) { .opening-legal { font-size: .66rem; } }
     .opening-quit:hover { filter: brightness(1.12); translate: 0 -1px; }
     .opening-quit:active { translate: 0 2px; }
     .opening-quit:focus-visible { outline: 2px solid #f3c869; outline-offset: 3px; }
@@ -9698,8 +9751,8 @@
   <link rel="stylesheet" href="level2.css?v=d5279f9c69">
   <!-- The language being played, and the German and Bulgarian it can be played in. -->
   <script src="game-language.js?v=b5e4cba74e"></script>
-  <script src="game-language-de.js?v=49d0518ff3"></script>
-  <script src="game-language-bg.js?v=cd9e8fb593"></script>
+  <script src="game-language-de.js?v=f283b4acc9"></script>
+  <script src="game-language-bg.js?v=aac2074a18"></script>
   <script src="victory-screen.js?v=5dc3a601d9"></script>
 </head>
 <body>
@@ -9715,6 +9768,11 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8v7.7"/><path d="M7.4 6.9a7.3 7.3 0 1 0 9.2 0"/></svg>
       <span data-ui-key="t467">Quit game</span>
     </button>
+    <!-- The legal notice and the privacy notice German law asks for
+         (impressum.html), one click from the first page: in its lower right
+         corner, level with the credit. Both menus hold it too, as a line
+         under their entries (.game-menu-legal). -->
+    <a class="opening-legal" id="titleLegal" href="impressum.html" target="_blank" rel="noopener" title="Legal notice and privacy notice (opens in a new tab)">Impressum · Privacy</a>
     <!-- The language, on the first page (beside Quit) and on the home screen
          (beside the menu): the flag of the one being played. A tap hangs
          the flags of all the languages beneath it, and choosing one loads
@@ -9755,6 +9813,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8v7.7"/><path d="M7.4 6.9a7.3 7.3 0 1 0 9.2 0"/></svg>
           <span class="game-menu-text" data-ui-key="t468"><span class="game-menu-label" data-ui-key="t469">Quit game</span><span class="game-menu-confirm" data-ui-key="t470">Tap again to quit. The turns you played are lost.</span></span>
         </button>
+        <a class="game-menu-legal" id="openingMenuLegal" role="menuitem" href="impressum.html" target="_blank" rel="noopener" title="Legal notice and privacy notice (opens in a new tab)" data-ui-key="t501">Impressum · Privacy</a>
       </div>
     </div>
     <div class="opening-stage opening-stage--intro" id="openingIntro">
@@ -10197,6 +10256,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8v7.7"/><path d="M7.4 6.9a7.3 7.3 0 1 0 9.2 0"/></svg>
               <span class="game-menu-text" data-ui-key="t474"><span class="game-menu-label" data-ui-key="t475">Quit game</span><span class="game-menu-confirm" data-ui-key="t476">Tap again to quit. The turns you played are lost.</span></span>
             </button>
+            <a class="game-menu-legal" id="menuLegal" role="menuitem" href="impressum.html" target="_blank" rel="noopener" title="Legal notice and privacy notice (opens in a new tab)" data-ui-key="t503">Impressum · Privacy</a>
           </div>
           <div class="sound-panel" id="soundPanel" role="group" aria-labelledby="soundPanelTitle" hidden>
             <div class="sound-panel-head" data-ui-key="t365">
@@ -10572,7 +10632,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.16.8-computers';
+    const APP_VERSION = '12.16.9-impressum';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
@@ -16483,6 +16543,8 @@
     // The way to the Substack page leaves the game in its own tab; the menu closes behind it.
     $('#menuSubstack').addEventListener('click', () => setGameMenuOpen(false));
     $('#openingMenuSubstack').addEventListener('click', () => setOpeningMenuOpen(false));
+    $('#menuLegal').addEventListener('click', () => setGameMenuOpen(false));
+    $('#openingMenuLegal').addEventListener('click', () => setOpeningMenuOpen(false));
 
     /* The same menu button on the home screen, the guide and the briefings,
        where it holds the reading (the paper, the Substack page) and the way
@@ -16562,7 +16624,7 @@
         shown.button.focus({ preventScroll: true });
       } else if (['ArrowDown', 'ArrowUp'].includes(event.key) || (shown.menu.id === 'languageMenu' && ['ArrowRight', 'ArrowLeft'].includes(event.key))) {
         // (The flags lie in a row: there, right and left go on and back as well.)
-        const items = [...shown.menu.querySelectorAll('.game-menu-item, .opening-language-option')];
+        const items = [...shown.menu.querySelectorAll('.game-menu-item, .game-menu-legal, .opening-language-option')];
         const at = items.indexOf(document.activeElement);
         const onward = event.key === 'ArrowDown' || event.key === 'ArrowRight';
         event.preventDefault();

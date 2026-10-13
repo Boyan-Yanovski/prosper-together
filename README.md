@@ -26,6 +26,8 @@ More games like this one, and posts about what they show, are on Substack:
 
 Created by Boyan Yanovski with the help of AI/SI friends.
 
+[Impressum · Datenschutz](https://boyan-yanovski.github.io/prosper-together/impressum.html) (legal notice and privacy notice)
+
 ---
 
 This repository holds the published copy of the game. It is built from the
