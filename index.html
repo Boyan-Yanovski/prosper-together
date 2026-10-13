@@ -71,7 +71,25 @@
         const scale = Math.max(.6, Math.min(long / PHONE_PAGE.long, short / PHONE_PAGE.short));
         return scale < .995 ? scale : 1;
       };
-      /* This page in a frame of the page that draws it smaller (hostPhonePage,
+      /* A tablet's page, drawn larger. A tablet gets the page a computer
+         gets, and there the table's cards and their words have one size
+         however large the window is (they are only ever drawn smaller, for
+         a low window). An iPad's page is as wide as a laptop's and a third
+         taller, on a screen a third the size of a monitor: the same cards
+         stood small in the corners of a table that was mostly felt.
+
+         So a tablet shows a narrower page drawn larger. The page is no
+         narrower than the table's near row needs (a card each side of the
+         player's own: 1051), no lower than its two rows of cards need (600),
+         and is drawn no more than three tenths larger: a 13-inch iPad
+         (1366 wide) by 1.3, an 11-inch one (1180) by 1.12. The scale is the
+         window's, not the screen's: a tablet's window can be a part of its
+         screen, beside another app. Held upright, and in a window no wider
+         than the page needs, the page is as it was. Computers are left as
+         they are. */
+      const TABLET_PAGE = { narrowest: 1051, lowest: 600, largest: 1.3 };
+      const tabletScale = (wide, high) => Math.max(1, Math.min(TABLET_PAGE.largest, wide / TABLET_PAGE.narrowest, high / TABLET_PAGE.lowest));
+      /* This page in a frame of the page that draws it smaller (hostScaledPage,
          below). That page knows what this one cannot see from inside a
          frame: whether the game was opened from its icon, and the strips the
          phone keeps clear of its camera. */
@@ -111,10 +129,59 @@
       if (['android', 'iphone', 'ipad', 'mac', 'windows', 'computer'].includes(shownAs)) {
         device = shownAs;
         handheld = ['android', 'iphone', 'ipad'].includes(shownAs);
-        fullscreen = shownAs === 'android' || shownAs === 'ipad';
+        fullscreen = shownAs === 'android';
+      }
+      /* An iPad's Safari can show a page in full screen, but it keeps the
+         iPad's own strip (the clock, the battery) and a button of its own
+         on top of the page, where they stood on the game's title, on a
+         player's portrait and on the menu. A page can neither move nor
+         hide them. So on an iPad the game does not ask for full screen: it
+         is played in Safari's window, under Safari's own bars, or from its
+         icon on the Home Screen, where it has the whole screen under the
+         iPad's strip. There the strip is given a black band of its own
+         above the page ("black" in the status-bar line; phones keep
+         "black-translucent", which lays the strip over the page, because a
+         phone held sideways shows none). */
+      if (device === 'ipad') {
+        fullscreen = false;
+        document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')?.setAttribute('content', 'black');
       }
       root.dataset.device = device;
       if (installed) root.dataset.installed = '';
+      // The editor's preview and test runs are left as they are.
+      const driven = query.has('author') || [...query.keys()].some(key => /test$/.test(key));
+      /* An iPad draws its page larger itself (TABLET_PAGE, above): the
+         viewport line in <head> tells its browser how wide a page to lay
+         out, and the browser fits that page to its window, sharp at every
+         size. The width is the window's own, in the screen's points,
+         divided by the scale. It is read again whenever the window changes:
+         the iPad turned, the window made narrower beside another app.
+         (Other tablets cannot be asked this way, since Chrome goes back to
+         the screen's own size in full screen; they get the frame below.) */
+      if (device === 'ipad' && window.top === window && !driven) {
+        const viewport = document.querySelector('meta[name="viewport"]');
+        const fitViewport = () => {
+          const view = window.visualViewport;
+          const drawn = view && view.scale > 0 ? view.scale : 1;
+          const wide = (view && view.width > 0 ? view.width : innerWidth) * drawn;
+          const high = (view && view.height > 0 ? view.height : innerHeight) * drawn;
+          if (!(wide > 0 && high > 0)) return;
+          /* The window's width is the page's width times the scale the
+             browser says it draws the page at. A browser that drew a
+             narrower page larger without saying so would seem to have a
+             window as narrow as that page, and the page would be set back
+             and forth for ever: there it is left as it stands. */
+          const narrowed = /^width=(\d+)/.exec(viewport.getAttribute('content'));
+          if (narrowed && Math.abs(drawn - 1) < .01 && Math.abs(wide - Number(narrowed[1])) < 2) return;
+          const scale = tabletScale(wide, high);
+          const content = scale > 1.004
+            ? `width=${Math.round(wide / scale)}, viewport-fit=cover`
+            : 'width=device-width, initial-scale=1, viewport-fit=cover';
+          if (viewport.getAttribute('content') !== content) viewport.setAttribute('content', content);
+        };
+        fitViewport();
+        for (const type of ['resize', 'orientationchange', 'pageshow']) addEventListener(type, fitViewport, { passive: true });
+      }
       if (!handheld) return;
       root.dataset.handheld = '';
       if (fullscreen && !installed) root.dataset.fullscreenAble = '';
@@ -141,12 +208,17 @@
          all read the frame, so nothing in the game has to know. Full screen,
          the turned screen and the lit screen are asked of this window (see
          fullscreenHost in the game's script). The editor's preview and test
-         runs are left as they are. */
-      const screenSize = () => previewed || [screen.width, screen.height];
-      const driven = query.has('author') || [...query.keys()].some(key => /test$/.test(key));
-      if (window.top === window && !driven && pageScale(...screenSize()) < 1) hostPhonePage();
+         runs are left as they are.
 
-      function hostPhonePage() {
+         A tablet other than an iPad gets the same frame, drawn larger
+         (TABLET_PAGE, above): its screen says whether, its window by how
+         much. */
+      const screenSize = () => previewed || [screen.width, screen.height];
+      const larger = device !== 'ipad' && Math.min(...screenSize()) >= 600
+        && tabletScale(Math.max(...screenSize()), Math.min(...screenSize())) > 1;
+      if (window.top === window && !driven && (pageScale(...screenSize()) < 1 || larger)) hostScaledPage();
+
+      function hostScaledPage() {
         root.dataset.pageHost = '';
         /* Nothing below this script is this window's. Read as plain text, the
            rest of the file is neither drawn, loaded nor run here. */
@@ -182,13 +254,15 @@
            whenever the window changes: the screen turned, full screen
            entered or left, a folding phone opened. */
         const fit = () => {
-          const scale = pageScale(...screenSize());
           const wide = root.clientWidth, high = root.clientHeight;
+          const scale = larger ? tabletScale(wide, high) : pageScale(...screenSize());
           let width = Math.round(wide / scale), height = Math.round(high / scale);
           if (!width || !height) return;
           drawn.across = wide / width;
           drawn.down = high / height;
-          if (width > height && height > PHONE_PAGE.tallest) {
+          if (larger) {
+            // A tablet's page fills its window.
+          } else if (width > height && height > PHONE_PAGE.tallest) {
             height = PHONE_PAGE.tallest;
             drawn.down = drawn.across;
           } else if (height >= width && width > PHONE_PAGE.tallest) {
@@ -265,7 +339,7 @@
       --ease: cubic-bezier(.2, .75, .2, 1);
       /* The strips a phone keeps clear of its camera, its corners and its
          own bars. A browser gives them to a window, not to a frame: a page
-         drawn smaller in a frame (hostPhonePage, in <head>) is given them by
+         drawn smaller in a frame (hostScaledPage, in <head>) is given them by
          the page around it, in its own pixels, on <html> itself. */
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-right: env(safe-area-inset-right, 0px);
@@ -5050,6 +5124,13 @@
          themselves keep their scrolling; two fingers still zoom. */
       html[data-handheld] { overscroll-behavior: none; }
       html[data-handheld] #gameApp { touch-action: pinch-zoom; }
+      /* An iPad's page is narrower than its window and drawn larger
+         (TABLET_PAGE, in <head>). On such a page Safari takes two quick taps
+         as a wish to zoom in, and may wait after each tap to see whether a
+         second follows. Nothing in the game is zoomed by tapping, and a tap
+         counts at once; a finger still scrolls what scrolls, and two fingers
+         still zoom. */
+      html[data-device="ipad"] body { touch-action: manipulation; }
 
       .topbar {
         position: absolute;
@@ -10462,7 +10543,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.16.4-guidenotes';
+    const APP_VERSION = '12.16.5-tablets';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
@@ -10850,7 +10931,7 @@
     const IN_LEVEL_FRAME = window.top !== window && TEST_PARAMS.get('frame') === 'level';
     document.documentElement.toggleAttribute('data-level-frame', IN_LEVEL_FRAME);
     /* The whole game in a frame: on a phone that draws the page smaller (see
-       hostPhonePage in <head>), or after the language was changed in full
+       hostScaledPage in <head>), or after the language was changed in full
        screen (openGameInFrame). The window around it holds nothing else that
        is shown, so the game is played as on a page of its own, levels and
        all; only what belongs to a window (full screen, closing it, its
@@ -11503,7 +11584,7 @@
        full screen. So in full screen the game in the new language opens in a
        frame filling this page, and this page is put away for good: from
        here on it is only the window the game is played in, as on a phone
-       that draws the page smaller (hostPhonePage, in <head>). The framed
+       that draws the page smaller (hostScaledPage, in <head>). The framed
        game asks this window for what belongs to a window (IN_PAGE_FRAME),
        and is told the strips the phone keeps clear of its camera, which a
        frame cannot see for itself. A later change of language, and the
