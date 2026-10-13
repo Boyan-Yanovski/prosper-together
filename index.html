@@ -19,9 +19,10 @@
        screen where the browser allows it, and are asked to turn the screen
        when the table is held upright. A phone smaller than the one the
        layouts are drawn for shows the same page drawn smaller (see "One size
-       for every phone" below). Computers get the page as it is. The UI
-       editor's Device choice (?device=…) shows the page as that device
-       would. -->
+       for every phone" below); a tablet or a computer with room for more
+       than the page needs shows it drawn larger (see "A larger window's
+       page"). The UI editor's Device choice (?device=…) shows the page as
+       that device would. -->
   <script>
     (function () {
       const root = document.documentElement;
@@ -71,24 +72,44 @@
         const scale = Math.max(.6, Math.min(long / PHONE_PAGE.long, short / PHONE_PAGE.short));
         return scale < .995 ? scale : 1;
       };
-      /* A tablet's page, drawn larger. A tablet gets the page a computer
-         gets, and there the table's cards and their words have one size
-         however large the window is (they are only ever drawn smaller, for
-         a low window). An iPad's page is as wide as a laptop's and a third
-         taller, on a screen a third the size of a monitor: the same cards
-         stood small in the corners of a table that was mostly felt.
+      /* A larger window's page, drawn larger. The table's cards and their
+         words have one size however large the window is (they are only ever
+         drawn smaller, for a low window). So in a window larger than the
+         table needs, the same cards stood small in the corners of a table
+         that was mostly felt: on an iPad, whose page is as wide as a
+         laptop's and a third taller on a screen a third the size of a
+         monitor, and on a laptop or a monitor all the same.
 
-         So a tablet shows a narrower page drawn larger. The page is no
-         narrower than the table's near row needs (a card each side of the
-         player's own: 1051), no lower than its two rows of cards need (600),
-         and is drawn no more than three tenths larger: a 13-inch iPad
-         (1366 wide) by 1.3, an 11-inch one (1180) by 1.12. The scale is the
-         window's, not the screen's: a tablet's window can be a part of its
-         screen, beside another app. Held upright, and in a window no wider
-         than the page needs, the page is as it was. Computers are left as
-         they are. */
-      const TABLET_PAGE = { narrowest: 1051, lowest: 600, largest: 1.3 };
-      const tabletScale = (wide, high) => Math.max(1, Math.min(TABLET_PAGE.largest, wide / TABLET_PAGE.narrowest, high / TABLET_PAGE.lowest));
+         So such a window shows a smaller page drawn larger. How small the
+         page may be says how large the cards stand at the table, and how
+         much they cover of the trades' pictures painted on its felt.
+
+         A tablet's page is no narrower than the table's near row needs (a
+         card each side of the player's own: 1051) and no lower than its two
+         rows of cards need (600), and is drawn no more than three tenths
+         larger: a 13-inch iPad (1366 wide) by 1.3, an 11-inch one (1180) by
+         1.12. The cards cover most of the pictures there.
+
+         A computer's page is no smaller than 1161 by 664, the author's
+         choice among three: the cards stand a tenth closer than in the
+         window the table was drawn in (1275 by 659), and the upper pictures
+         are half under them. It is drawn up to twice as large, as far as
+         the window goes: a 13-inch MacBook's (1440 by 823) by 1.24, a
+         monitor's (1920 by 950) by 1.43. Beyond twice the pictures would be
+         drawn past what they hold.
+
+         The scale is the window's, not the screen's: a window can be a part
+         of its screen. Held upright, and in a window no larger than the
+         page needs, the page is as it was. */
+      const LARGER_PAGE = {
+        tablet: { narrowest: 1051, lowest: 600, largest: 1.3 },
+        computer: { narrowest: 1161, lowest: 664, largest: 2 }
+      };
+      const largerScale = (wide, high) => {
+        // (An iPad is a tablet with a trackpad as without one.)
+        const page = handheld || device === 'ipad' ? LARGER_PAGE.tablet : LARGER_PAGE.computer;
+        return Math.max(1, Math.min(page.largest, wide / page.narrowest, high / page.lowest));
+      };
       /* This page in a frame of the page that draws it smaller (hostScaledPage,
          below). That page knows what this one cannot see from inside a
          frame: whether the game was opened from its icon, and the strips the
@@ -150,14 +171,15 @@
       if (installed) root.dataset.installed = '';
       // The editor's preview and test runs are left as they are.
       const driven = query.has('author') || [...query.keys()].some(key => /test$/.test(key));
-      /* An iPad draws its page larger itself (TABLET_PAGE, above): the
+      /* An iPad draws its page larger itself (LARGER_PAGE, above): the
          viewport line in <head> tells its browser how wide a page to lay
          out, and the browser fits that page to its window, sharp at every
          size. The width is the window's own, in the screen's points,
          divided by the scale. It is read again whenever the window changes:
          the iPad turned, the window made narrower beside another app.
          (Other tablets cannot be asked this way, since Chrome goes back to
-         the screen's own size in full screen; they get the frame below.) */
+         the screen's own size in full screen, and a computer's browser does
+         not read that line at all; they get the frame below.) */
       if (device === 'ipad' && window.top === window && !driven) {
         const viewport = document.querySelector('meta[name="viewport"]');
         const fitViewport = () => {
@@ -173,7 +195,7 @@
              and forth for ever: there it is left as it stands. */
           const narrowed = /^width=(\d+)/.exec(viewport.getAttribute('content'));
           if (narrowed && Math.abs(drawn - 1) < .01 && Math.abs(wide - Number(narrowed[1])) < 2) return;
-          const scale = tabletScale(wide, high);
+          const scale = largerScale(wide, high);
           const content = scale > 1.004
             ? `width=${Math.round(wide / scale)}, viewport-fit=cover`
             : 'width=device-width, initial-scale=1, viewport-fit=cover';
@@ -182,20 +204,21 @@
         fitViewport();
         for (const type of ['resize', 'orientationchange', 'pageshow']) addEventListener(type, fitViewport, { passive: true });
       }
-      if (!handheld) return;
-      root.dataset.handheld = '';
-      if (fullscreen && !installed) root.dataset.fullscreenAble = '';
-      // Which help line shows: iPhone and iPad by name; any other phone or
-      // tablet by whether the game can turn the screen for the player. An
-      // installed game on Android is already full screen and sideways.
-      const help = device === 'iphone' || device === 'ipad' ? device
-        : installed ? '' : fullscreen ? 'fullscreen' : 'turn';
-      if (help) root.dataset.help = help;
-      // Installing is recommended until it is done. Browsers install only
-      // from a secure (https) address, so a copy shared over plain http on the
-      // local network does not suggest it.
-      if (!installed && window.isSecureContext && ['android', 'iphone', 'ipad'].includes(device)) {
-        root.dataset.install = device === 'android' ? 'android' : 'apple';
+      if (handheld) {
+        root.dataset.handheld = '';
+        if (fullscreen && !installed) root.dataset.fullscreenAble = '';
+        // Which help line shows: iPhone and iPad by name; any other phone or
+        // tablet by whether the game can turn the screen for the player. An
+        // installed game on Android is already full screen and sideways.
+        const help = device === 'iphone' || device === 'ipad' ? device
+          : installed ? '' : fullscreen ? 'fullscreen' : 'turn';
+        if (help) root.dataset.help = help;
+        // Installing is recommended until it is done. Browsers install only
+        // from a secure (https) address, so a copy shared over plain http on the
+        // local network does not suggest it.
+        if (!installed && window.isSecureContext && ['android', 'iphone', 'ipad'].includes(device)) {
+          root.dataset.install = device === 'android' ? 'android' : 'apple';
+        }
       }
 
       /* A phone smaller than the one the layouts are drawn for. The browser
@@ -210,13 +233,17 @@
          fullscreenHost in the game's script). The editor's preview and test
          runs are left as they are.
 
-         A tablet other than an iPad gets the same frame, drawn larger
-         (TABLET_PAGE, above): its screen says whether, its window by how
-         much. */
+         A tablet other than an iPad, and a computer, get the same frame,
+         drawn larger (LARGER_PAGE, above): the screen says whether, the
+         window by how much. A computer's window is its player's to make
+         larger and smaller, so it keeps the frame at every size and the
+         page in it is drawn as it is while the window has no room for
+         more. */
       const screenSize = () => previewed || [screen.width, screen.height];
       const larger = device !== 'ipad' && Math.min(...screenSize()) >= 600
-        && tabletScale(Math.max(...screenSize()), Math.min(...screenSize())) > 1;
-      if (window.top === window && !driven && (pageScale(...screenSize()) < 1 || larger)) hostScaledPage();
+        && largerScale(Math.max(...screenSize()), Math.min(...screenSize())) > 1;
+      const smaller = handheld && pageScale(...screenSize()) < 1;
+      if (window.top === window && !driven && (smaller || larger)) hostScaledPage();
 
       function hostScaledPage() {
         root.dataset.pageHost = '';
@@ -255,13 +282,13 @@
            entered or left, a folding phone opened. */
         const fit = () => {
           const wide = root.clientWidth, high = root.clientHeight;
-          const scale = larger ? tabletScale(wide, high) : pageScale(...screenSize());
+          const scale = larger ? largerScale(wide, high) : pageScale(...screenSize());
           let width = Math.round(wide / scale), height = Math.round(high / scale);
           if (!width || !height) return;
           drawn.across = wide / width;
           drawn.down = high / height;
           if (larger) {
-            // A tablet's page fills its window.
+            // A larger page fills its window.
           } else if (width > height && height > PHONE_PAGE.tallest) {
             height = PHONE_PAGE.tallest;
             drawn.down = drawn.across;
@@ -293,6 +320,8 @@
         }, { passive: true });
         // (The strips are all padding: it is their outer box that changes.)
         if (window.ResizeObserver) new ResizeObserver(fit).observe(strips, { box: 'border-box' });
+        // The keyboard is the game's from the start, not this empty window's.
+        frame.addEventListener('load', () => { try { frame.contentWindow.focus(); } catch {} });
         const address = new URL(location.href);
         address.searchParams.set('frame', 'page');
         frame.src = address.href;
@@ -5125,7 +5154,7 @@
       html[data-handheld] { overscroll-behavior: none; }
       html[data-handheld] #gameApp { touch-action: pinch-zoom; }
       /* An iPad's page is narrower than its window and drawn larger
-         (TABLET_PAGE, in <head>). On such a page Safari takes two quick taps
+         (LARGER_PAGE, in <head>). On such a page Safari takes two quick taps
          as a wish to zoom in, and may wait after each tap to see whether a
          second follows. Nothing in the game is zoomed by tapping, and a tap
          counts at once; a finger still scrolls what scrolls, and two fingers
@@ -10543,7 +10572,7 @@
        and a minimum above thirty cannot be met even by three perfect turns. */
     const MAX_SURVIVAL_MINIMUM = 30;
     const MAX_SURVIVAL_WINDOW = 8;
-    const APP_VERSION = '12.16.7-safarisound';
+    const APP_VERSION = '12.16.8-computers';
     const SAVE_FORMAT = 'common-works-table-v11-save';
     const SAVE_FORMAT_VERSION = 2;
     const SAVE_SERVER_ENDPOINT = '/api/saves';
