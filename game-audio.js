@@ -1022,11 +1022,26 @@ window.CommonWorksAudio = (() => {
     }
   }
 
+  /* An iPad or iPhone counts a page's synthesised sound as background sound:
+     set to silent (the bell in Control Center, the switch on a phone's side)
+     it plays none of it, while a video's sound plays on. Asking for a
+     'playback' session makes the game's sound count as media, as the
+     video's does. A muted game asks for nothing, so that it does not stop
+     the music another app is playing. Other browsers have no such session. */
+  function claimSession() {
+    const session = navigator.audioSession;
+    if (!session) return;
+    const silent = prefs.muted || (prefs.music <= 0 && prefs.effects <= 0);
+    const type = silent ? 'auto' : 'playback';
+    try { if (session.type !== type) session.type = type; } catch {}
+  }
+
   function ensureEngine() {
     if (!config.enabled) return false;
     if (engine) return true;
     const Context = window.AudioContext || window.webkitAudioContext;
     if (!Context) return false;
+    claimSession();
     try { ctx = new Context({ latencyHint: 'interactive' }); }
     catch { return false; }
     engine = createEngine(ctx);
@@ -1044,11 +1059,13 @@ window.CommonWorksAudio = (() => {
 
   /* Starts the sound. Most browsers let a page make sound only after the
      player has clicked or pressed a key; until then the audio waits,
-     suspended, and the first click or key press brings it in. */
+     suspended, and the first click or key press brings it in. An iPad also
+     stops the sound when another tab or app takes it ('interrupted'); the
+     next touch brings it back the same way. */
   function unlock() {
     if (!ensureEngine()) return;
     unlocked = true;
-    if (ctx.state === 'suspended' && !document.hidden) ctx.resume().then(refreshMusic, () => {});
+    if (ctx.state !== 'running' && !document.hidden) ctx.resume().then(refreshMusic, () => {});
     refreshMusic();
   }
 
@@ -1078,6 +1095,7 @@ window.CommonWorksAudio = (() => {
     const wasSilent = prefs.muted || prefs.effects <= 0;
     prefs = sanitizePrefs({ ...prefs, ...patch });
     try { localStorage.setItem(config.storageKey, JSON.stringify(prefs)); } catch {}
+    if (engine) claimSession();
     if (Object.keys(patch).length) unlock();
     applyLevels();
     refreshMusic();
